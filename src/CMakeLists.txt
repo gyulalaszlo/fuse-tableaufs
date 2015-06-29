@@ -28,19 +28,36 @@ string(REPLACE ";" " " FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
 message(">> Setting FUSE_CFLAGS_OTHER to ${FUSE_CFLAGS_OTHER_SPLIT}")
 set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 
+add_library( tableaufs-pgconn
+  connection/pgconn.hpp
+  connection/pgconn.cc
+  )
+
+target_link_libraries( tableaufs-pgconn
+  ${ZMQ_LIBRARY}
+  ${ZMQPP_LIBRARY}
+  stdc++
+  )
+
 # Add the executable
 add_executable( tableaufs
   tableaufs.c
   workgroup.c
+
   )
 
 # Set the compile flags on a pre-target basis
-set_target_properties(tableaufs PROPERTIES COMPILE_FLAGS ${TFS_COMPILE_FLAGS})
+set_target_properties(tableaufs PROPERTIES
+  COMPILE_FLAGS ${TFS_COMPILE_FLAGS}
+  #CXX_STANDARD_REQUIRED On
+  #CXX_STANDARD 11
+  )
 
 # Link it with all the good stuff
 target_link_libraries( tableaufs
   ${POSTGRES_LIBRARY}
   ${FUSE_LDFLAGS}
+  tableaufs-pgconn
   )
 
 install(

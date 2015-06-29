@@ -33,7 +33,9 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+
 #include "workgroup.h"
+#include "connection/pgconn_c.h"
 
 
 #define TFS_WG_PARSE_PATH( path, node ) \
@@ -176,6 +178,9 @@ int main(int argc, char *argv[])
   TFS_WG_connect_db( tableau_cmdargs.pghost, tableau_cmdargs.pgport,
       tableau_cmdargs.pguser, tableau_cmdargs.pgpass);
 
+
+  struct TFS_PgActor* actor = TFS_makeActor();
+  TFS_destroyActor(actor);
   // Do the FUSE dance
   return fuse_main(args.argc, args.argv, &tableau_oper, NULL);
 }

@@ -22,15 +22,18 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 cmake_minimum_required(VERSION 2.6)
-project(fuse-tableaufs C)
-
+#project(fuse-tableaufs C)
+project(fuse-tableaufs)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(UseCxx11)
 include(DefaultCompilerFlags)
 include(FindPkgConfig)
 
 # Try to find Postgres
 find_package(Postgres 9.0 REQUIRED)
+find_package(ZMQ REQUIRED)
+find_package(ZMQPP REQUIRED)
 
 # Load FUSE
 pkg_check_modules( FUSE REQUIRED fuse>=2.9.0)
@@ -38,7 +41,10 @@ pkg_check_modules( FUSE REQUIRED fuse>=2.9.0)
 # Add the include directories
 include_directories(
   ${POSTGRES_INCLUDE_DIR}
-  ${FUSE_INCLUDE_DIRS} )
+  ${FUSE_INCLUDE_DIRS}
+  ${ZMQ_INCLUDE_DIRS}
+  ${ZMQPP_INCLUDE_DIRS}
+  )
 
 
 # SUBDIRS(...) is deprecated
