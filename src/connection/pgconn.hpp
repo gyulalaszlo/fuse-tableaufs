@@ -36,20 +36,15 @@ namespace tableauFS {
       Actor(Actor&& actor) = default;
       Actor& operator=(Actor&& other) = default;
 
+      // Fields
       Host host;
       Endpoint endpoint;
 
+      // Wrap up the state
       std::unique_ptr<State> state;
-
     };
 
 
-
-
   }
-
-
-
-
 }
 

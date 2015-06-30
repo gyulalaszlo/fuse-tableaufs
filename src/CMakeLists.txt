@@ -31,6 +31,7 @@ set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 add_library( tableaufs-pgconn
   connection/pgconn.hpp
   connection/pgconn.cc
+  connection/tfs_postgres.cc
   )
 
 target_link_libraries( tableaufs-pgconn
