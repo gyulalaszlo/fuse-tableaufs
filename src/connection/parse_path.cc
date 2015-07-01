@@ -15,15 +15,14 @@ namespace tableauFS {
       return {NO_ERR, {PathNode::Root}};
 
     // TODO: As of FUSE 2.8, all path lengths are valid
-    enum { BUF_NAME_MAX = 255};
-    char buf[ BUF_NAME_MAX * 3 ] = {0};
-    auto site    = &buf[0 * BUF_NAME_MAX];
-    auto project = &buf[1 * BUF_NAME_MAX];
-    auto file    = &buf[2 * BUF_NAME_MAX];
+    char buf[ NameMax * 3 ] = {0};
+    auto site    = &buf[0 * NameMax];
+    auto project = &buf[1 * NameMax];
+    auto file    = &buf[2 * NameMax];
 
 #define _NAME_MAX "255"
     // use this to catch any extra names after the file name
-    char extras[BUF_NAME_MAX];
+    char extras[NameMax];
     const auto ret = sscanf(path, "/%" _NAME_MAX "[^/]/%" _NAME_MAX "[^/]/%" _NAME_MAX "[^/]%s",
         site, project, file, extras);
 #undef _NAME_MAX

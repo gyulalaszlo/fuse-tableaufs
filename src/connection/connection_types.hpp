@@ -8,6 +8,16 @@
 
 namespace tableauFS {
 
+  enum {
+    // The block size of the TableauFS
+    BlockSize = 8196,
+
+    BufSize = 1024,
+
+    // The maximum size of the path components (site, project, file)
+    NameMax = 255
+  };
+
   // Alias the slice type here
   template <typename T>
   using slice = monkeykingz::slice<T>;
