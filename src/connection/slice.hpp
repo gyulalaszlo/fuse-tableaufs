@@ -5,11 +5,10 @@
 #include <cassert>
 #include <type_traits>
 
+#include "cpp14/remove_cv_t.hpp"
+
 namespace monkeykingz
 {
-
-  template <typename T>
-  using remove_cv_t = typename std::remove_cv<T>::type;
 
   /// Represents a block of homogenous stream of elements of type T
   /// in memory
@@ -28,9 +27,9 @@ namespace monkeykingz
 
     /// Converts this slice to have a const version of the base type.
     /// This is a workaround until proper construction of slices.
-    slice<const remove_cv_t<T>> to_const()
+    slice<const std::remove_cv_t<T>> to_const()
     {
-      return slice<const remove_cv_t<T>>{values, count};
+      return slice<const std::remove_cv_t<T>>{values, count};
     }
 
     // Iterators

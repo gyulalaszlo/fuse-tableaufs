@@ -11,8 +11,8 @@ namespace tableauFS {
     // the error code
     const ErrorCode err;
 
-    bool ok() { return err == NO_ERR; }
-    bool failed() { return err != NO_ERR; }
+    bool ok() const { return err == NO_ERR; }
+    bool failed() const { return err != NO_ERR; }
   };
 
   // A POD wrapper for the result of a popssible error operation

@@ -29,22 +29,38 @@ message(">> Setting FUSE_CFLAGS_OTHER to ${FUSE_CFLAGS_OTHER_SPLIT}")
 set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 
 add_library( tableaufs-pgconn
-  connection/pgconn.hpp
   connection/pgconn.cc
+  connection/pg_helpers.cc
+
+  connection/parse_path.cc
   connection/tfs_postgres.cc
   )
 
 target_link_libraries( tableaufs-pgconn
+  ${POSTGRES_LIBRARY}
   ${ZMQ_LIBRARY}
   ${ZMQPP_LIBRARY}
   stdc++
   )
 
-# Add the executable
+# Tests
+# -----
+
+# Postgres connection test
+add_executable( pgconn-test tests/test_runner.cc tests/pgconn_interface_tests.cc)
+target_link_libraries( pgconn-test tableaufs-pgconn gtest)
+add_test( pgconn pgconn-test )
+
+# Path parser test
+add_executable( parse-path-test tests/test_runner.cc tests/parse_path_test.cc)
+target_link_libraries( parse-path-test tableaufs-pgconn gtest)
+add_test( parse-path parse-path-test )
+
+
+# Add the main executable
 add_executable( tableaufs
   tableaufs.c
   workgroup.c
-
   )
 
 # Set the compile flags on a pre-target basis

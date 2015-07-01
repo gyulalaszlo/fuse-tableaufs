@@ -22,8 +22,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 cmake_minimum_required(VERSION 2.6)
-#project(fuse-tableaufs C)
 project(fuse-tableaufs)
+enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseCxx11)
@@ -44,6 +44,9 @@ include_directories(
   ${FUSE_INCLUDE_DIRS}
   ${ZMQ_INCLUDE_DIRS}
   ${ZMQPP_INCLUDE_DIRS}
+
+  src
+  vendor/gtest/include
   )
 
 
@@ -54,4 +57,5 @@ include_directories(
 # at the end of the current cmakelists file - this is the old
 # behaviour and some vars are initialized 'out of order'  -or at
 # least in unexpected order
+add_subdirectory(vendor)
 add_subdirectory(src)

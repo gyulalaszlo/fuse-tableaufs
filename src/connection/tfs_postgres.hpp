@@ -55,7 +55,8 @@ namespace tableauFS {
       virtual Result<void> truncate_file(const char* path, off_t offset) = 0;
 
 
-      static std::shared_ptr<TFSPostgres> make_tfs_postgres( const Host host );
+      static std::shared_ptr<TFSPostgres> make( const Host host );
+
   };
 
   // Constructor for the default implementation

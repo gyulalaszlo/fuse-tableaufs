@@ -1,20 +1,71 @@
 #include "tfs_postgres.hpp"
 
+#include "libpq-fe.h"
+#include "libpq/libpq-fs.h"
+
+#include "pg_helpers.hpp"
+#include "cpp14/make_unique.hpp"
+
 using namespace tableauFS;
 
 namespace {
+
+  class TFSPostgresImpl;
+
+
+
+
+  struct PgConnection {
+    PgConnection(Host host)
+      : host(host)
+      , conn(nullptr)
+    {
+      // try to connect and store the connection
+      auto conn_result = connect_to_pg( host );
+      if (conn_result.status.ok()) {
+        conn = conn_result.value;
+      }
+      printf("Connecting.. %zX\n", (uintptr_t)conn);
+    }
+
+    ~PgConnection() {
+      // closes the connection if the connection is a valid one
+      if (conn != nullptr) PQfinish(conn);
+
+      printf("Disconnecting.. %lX\n", conn);
+    }
+
+    PgConnection( const PgConnection& ) = delete;
+    PgConnection& operator=(const PgConnection& other) = delete;
+    PgConnection( PgConnection&& ) = default;
+    PgConnection& operator=(PgConnection&& other) = default;
+
+    // is the connection established?
+    bool ok() const { return conn != nullptr; }
+
+
+    Host host;
+    PGconn* conn;
+  };
 
   class TFSPostgresImpl : public TFSPostgres
   {
     friend class TFSPostgres;
 
     public:
-    TFSPostgresImpl( Host host )
-      : host(host)
+    TFSPostgresImpl( std::unique_ptr<PgConnection> connection )
+      : connection(std::move(connection))
     {
+      printf("TFSPostgresImpl\n");
     }
 
-    ~TFSPostgresImpl() {}
+    virtual ~TFSPostgresImpl()
+    {
+      printf("~TFSPostgresImpl\n");
+    }
+
+    TFSPostgresImpl( const TFSPostgresImpl& other ) = delete;
+    TFSPostgresImpl( TFSPostgresImpl&& other ) = default;
 
     private:
 
@@ -51,17 +102,16 @@ namespace {
     }
 
 
-    Host host;
-
+    //PgConnection connection;
+    std::unique_ptr<PgConnection> connection;
   };
 }
 
 
 namespace tableauFS {
 
-  std::shared_ptr<TFSPostgres> TFSPostgres::make_tfs_postgres( const Host host )
+  std::shared_ptr<TFSPostgres> TFSPostgres::make( const Host host )
   {
-    return std::make_shared<TFSPostgresImpl>( host );
+    return std::make_shared<TFSPostgresImpl>( std::make_unique<PgConnection>(host) );
   }
-
 }

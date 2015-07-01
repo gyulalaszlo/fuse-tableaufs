@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "slice.hpp"
+#include "workgroup.h"
 
 namespace tableauFS {
 
@@ -17,9 +18,22 @@ namespace tableauFS {
   using ROBuffer = slice<const char>;
   using RWBuffer = slice<char>;
 
+  //using Node = tfs_wg_node_t;
+
 
   // TODO: this is seriously bad...
   using DirectoryList = std::vector< std::string >;
+
+  // A file node for path
+  struct PathNode {
+    enum Level { Root, Site, Project, File, Invalid };
+
+    Level level;
+
+    std::string site;
+    std::string project;
+    std::string file;
+  };
 
   // Description of the host
   struct Host {
