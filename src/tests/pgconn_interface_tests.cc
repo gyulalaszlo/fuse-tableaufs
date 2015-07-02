@@ -55,3 +55,24 @@ TEST(TFSPostgresTest, DirStatInvalidSite) {
 
 }
 
+TEST(TFSPostgresTest, DirStatProject) {
+  auto pg = make_tfs_postgres();
+
+  const auto path = PathNode { PathNode::Project, "Default", "test" };
+  // get some stat
+  auto stats = pg->get_attributes( path );
+  EXPECT_TRUE( stats.status.ok() );
+  // for now we hardcode this mtime
+  EXPECT_EQ( stats.value.st_mtime, 946684800);
+
+}
+
+TEST(TFSPostgresTest, DirStatInvalidProject) {
+  auto pg = make_tfs_postgres();
+
+  const auto path = PathNode { PathNode::Project, "Default", "test-invalid-project" };
+  // get some stat
+  auto stats = pg->get_attributes( path );
+  EXPECT_FALSE( stats.status.ok() );
+}
+

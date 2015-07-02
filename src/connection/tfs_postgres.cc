@@ -98,14 +98,32 @@ namespace {
             // Propagate any errors
             if (!res.status.ok()) return {res.status.err, node};
 
-            //// Fail if no such entry
-            //if (PQntuples(res.value) == 0 ) return {-ENOENT, node};
+            // set the of the node
+            node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
+            // return shit:
+            return {NO_ERR, node};
+          }
+
+
+        case PathNode::Project:
+          {
+            const auto res = connection->run_query(
+                TFS_WG_LIST_PROJECTS " and c.name = $2",
+                std::array<const char*, 2>{ path.site.c_str(), path.project.c_str() }
+                );
+            // clean up after ourselves
+            SCOPE_EXIT(PQclear(res.value));
+
+            // Propagate any errors
+            if (!res.status.ok()) return {res.status.err, node};
 
             // set the of the node
             node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
             // return shit:
             return {NO_ERR, node};
           }
+
+
 
         default:
           return {NO_ERR, node};
