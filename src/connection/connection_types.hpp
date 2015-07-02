@@ -6,6 +6,16 @@
 #include "slice.hpp"
 #include "workgroup.h"
 
+// include some default macros for EZ LIFE
+#include "cpp14/markup.hpp"
+
+
+// pre-declare some shit
+extern "C" {
+  typedef struct pg_conn PGconn;
+  typedef struct pg_result PGresult;
+}
+
 namespace tableauFS {
 
   enum {
@@ -27,8 +37,6 @@ namespace tableauFS {
 
   using ROBuffer = slice<const char>;
   using RWBuffer = slice<char>;
-
-  //using Node = tfs_wg_node_t;
 
 
   // TODO: this is seriously bad...
@@ -54,6 +62,9 @@ namespace tableauFS {
   };
 
 
+  class PgConnection;
+  class TFSPostgres;
+  class TFSPostgresConfig;
 
 }
 

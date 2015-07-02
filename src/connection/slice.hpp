@@ -110,4 +110,11 @@ namespace monkeykingz
   {
     return slice<typename Container::value_type>{c.data(), c.size()};
   }
+
+  template <typename Container>
+  inline auto make_const_slice(const Container& c) noexcept
+      -> const slice<const typename Container::value_type>
+  {
+    return slice<typename Container::value_type>{c.data(), c.size()};
+  }
 }

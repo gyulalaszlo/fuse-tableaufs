@@ -3,9 +3,13 @@
 #include "libpq-fe.h"
 #include "libpq/libpq-fs.h"
 
-#include "pg_helpers.hpp"
 #include "cpp14/make_unique.hpp"
+#include "cpp14/scope_exit.hpp"
 #include "tfs_sql_fragments.h"
+
+#include "tfs_postgres_config.hpp"
+
+#include "pg_connection.hpp"
 
 using namespace tableauFS;
 
@@ -33,75 +37,17 @@ namespace {
   }
 
 
-
-  struct PgConnection {
-    PgConnection(Host host)
-      : host(host)
-      , conn(nullptr)
-    {
-      // try to connect and store the connection
-      auto conn_result = connect_to_pg( host );
-      if (conn_result.status.ok()) {
-        conn = conn_result.value;
-      }
-    }
-
-    ~PgConnection() {
-      // closes the connection if the connection is a valid one
-      if (conn != nullptr) PQfinish(conn);
-    }
-
-
-    // A wrapper for PQexecParams()
-    Result<PGresult*> run_query( const char* sql,
-        int nParams,
-        const char * const *paramValues)
-    {
-      // fail if no connection
-      if (!ok()) return {-EINVAL, nullptr};
-
-      fprintf(stderr, "Running SQL: '%s'\n", sql);
-
-      auto res = PQexecParams(conn, 
-          TFS_WG_LIST_SITES " and c.name = $1",
-          nParams,
-          nullptr,
-          paramValues,
-          // no binary params, so no param types, etc.
-          nullptr, nullptr, 0);
-
-      if (PQresultStatus(res) == PGRES_TUPLES_OK)
-        return {NO_ERR, res};
-
-      // Debug if we failed
-      fprintf(stderr, "SQL Exec Failed: '%s' entries failed: %s/%s",
-          sql,
-          PQresultErrorMessage(res),
-          PQerrorMessage(conn));
-      // TODO: error handling
-      return {-EINVAL, nullptr};
-    }
-
-    PgConnection( const PgConnection& ) = delete;
-    PgConnection& operator=(const PgConnection& other) = delete;
-    PgConnection( PgConnection&& ) = default;
-    PgConnection& operator=(PgConnection&& other) = default;
-
-    // is the connection established?
-    bool ok() const { return conn != nullptr; }
-
-
-    Host host;
-    PGconn* conn;
-  };
-
   class TFSPostgresImpl : public TFSPostgres
   {
     friend class TFSPostgres;
 
     public:
-    TFSPostgresImpl( std::unique_ptr<PgConnection> connection )
+    TFSPostgresImpl(
+        std::unique_ptr<PgConnection> connection,
+        std::unique_ptr<TFSPostgresConfig> config
+        )
       : connection(std::move(connection))
+      , config( std::move(config))
     {
     }
 
@@ -111,6 +57,7 @@ namespace {
 
     TFSPostgresImpl( const TFSPostgresImpl& other ) = delete;
     TFSPostgresImpl( TFSPostgresImpl&& other ) = default;
+
 
     private:
 
@@ -130,40 +77,32 @@ namespace {
     virtual Result<struct stat> get_attributes(const PathNode& path) {
 
       auto node = default_stat_for( path );
-      //struct stat node = { .st_blksize = BlockSize };
-
-      //// basic stat stuff: file type, nlinks, size of dirs
-      //if ( path.level < PathNode::File) {
-        //node.st_mode = S_IFDIR | 0555;   // read only
-        //node.st_nlink = 2;
-        //node.st_size = BlockSize;
-        //node.st_blocks = 1;
-      //} else if (path.level == PathNode::File) {
-        //node.st_mode = S_IFREG | 0444;   // read only
-        //node.st_nlink = 1;
-      //}
 
       switch (path.level) {
 
         // Root nodes care only about a (fake) mtime
         case PathNode::Root:
-          time( &(node.st_mtime));
+          // get the mtime of root from the config
+          node.st_mtime = config->get_root_mtime();
           return {NO_ERR,node};
 
         case PathNode::Site:
           {
-            const char* param_values[1] = { path.site.c_str() };
             const auto res = connection->run_query(
                 TFS_WG_LIST_SITES " and c.name = $1",
-                1, param_values
+                std::array<const char*, 1>{ path.site.c_str()}
                 );
+            // clean up after ourselves
+            SCOPE_EXIT(PQclear(res.value));
 
             // Propagate any errors
             if (!res.status.ok()) return {res.status.err, node};
 
-            // Fail if no such entry
-            if (PQntuples(res.value) == 0 ) return {-ENOENT, node};
+            //// Fail if no such entry
+            //if (PQntuples(res.value) == 0 ) return {-ENOENT, node};
 
+            // set the of the node
+            node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
             // return shit:
             return {NO_ERR, node};
           }
@@ -192,14 +131,21 @@ namespace {
 
     //PgConnection connection;
     std::unique_ptr<PgConnection> connection;
+    std::unique_ptr<TFSPostgresConfig> config;
   };
+
+
 }
 
 
 namespace tableauFS {
 
-  std::shared_ptr<TFSPostgres> TFSPostgres::make( const Host host )
+  std::shared_ptr<TFSPostgres> TFSPostgres::make(
+      std::unique_ptr<PgConnection> connection,
+      std::unique_ptr<TFSPostgresConfig> config
+      )
   {
-    return std::make_shared<TFSPostgresImpl>( std::make_unique<PgConnection>(host) );
+    return std::make_shared<TFSPostgresImpl>( std::move(connection), std::move(config) );
   }
+
 }
