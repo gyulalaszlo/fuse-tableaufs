@@ -39,7 +39,7 @@ TEST(TFSPostgresTest, DirStatSite) {
   auto stats = pg->get_attributes( path );
   EXPECT_TRUE( stats.status.ok() );
   // for now we hardcode this mtime
-  EXPECT_EQ( stats.value.st_mtime, 946684800);
+  EXPECT_EQ( 946684800, stats.value.st_mtime );
 
 }
 
@@ -58,12 +58,12 @@ TEST(TFSPostgresTest, DirStatInvalidSite) {
 TEST(TFSPostgresTest, DirStatProject) {
   auto pg = make_tfs_postgres();
 
-  const auto path = PathNode { PathNode::Project, "Default", "test" };
+  const auto path = PathNode { PathNode::Project, "Default", "Tableau Samples" };
   // get some stat
   auto stats = pg->get_attributes( path );
   EXPECT_TRUE( stats.status.ok() );
   // for now we hardcode this mtime
-  EXPECT_EQ( stats.value.st_mtime, 946684800);
+  EXPECT_EQ( 1432796488, stats.value.st_mtime);
 
 }
 

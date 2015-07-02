@@ -84,7 +84,7 @@ namespace {
         case PathNode::Root:
           // get the mtime of root from the config
           node.st_mtime = config->get_root_mtime();
-          return {NO_ERR,node};
+          break;
 
         case PathNode::Site:
           {
@@ -98,11 +98,10 @@ namespace {
             // Propagate any errors
             if (!res.status.ok()) return {res.status.err, node};
 
-            // set the of the node
+            // set the mtime of the node
             node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
-            // return shit:
-            return {NO_ERR, node};
           }
+          break;
 
 
         case PathNode::Project:
@@ -117,17 +116,44 @@ namespace {
             // Propagate any errors
             if (!res.status.ok()) return {res.status.err, node};
 
-            // set the of the node
+            // set the mtime of the node
             node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
-            // return shit:
-            return {NO_ERR, node};
           }
+          break;
+
+
+        case PathNode::File:
+          {
+            const auto res = connection->run_query(
+                TFS_WG_LIST_WORKBOOKS " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(twb) ") "
+                "union all "
+                TFS_WG_LIST_DATASOURCES " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(tds) ") ",
+                std::array<const char*, 3>{ path.site.c_str(), path.project.c_str(), path.file.c_str() }
+                );
+            // clean up after ourselves
+            SCOPE_EXIT(PQclear(res.value));
+
+            // Propagate any errors
+            if (!res.status.ok()) return {res.status.err, node};
+
+            // set the mtime of the node
+            node.st_mtime = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME) );
+
+            const auto st_size = atoll( PQgetvalue(res.value, 0, TFS_WG_QUERY_SIZE) );
+            //node->loid = (uint64_t)atoll( PQgetvalue(res, 0, TFS_WG_QUERY_CONTENT) );
+            node.st_size = st_size;
+            if ( st_size> 0 )
+              node.st_blocks = (int) st_size / BlockSize + 1;
+          }
+          break;
 
 
 
         default:
           return {NO_ERR, node};
       }
+
+      return {NO_ERR, node};
 
     }
 
