@@ -43,12 +43,36 @@ namespace {
 
   // Add all the directory entries to the buffer
   template <typename Buffer>
-  void add_directory_entries( Buffer& buffer, const PGQuery& query ) {
-    // add each subdirectory
+  Result<Buffer&> add_directory_entries( Buffer& buffer, const PGQuery& query ) {
+    using Entry = typename Buffer::value_type;
+
+    // clear the buffer
+    buffer.clear();
+
+    // Propagate any errors
+    if (!query.ok()) return {query.status(), buffer};
+
+    // reserve space for all files and the two dot specials
     const auto size = query.size();
+    buffer.reserve(size + 2 );
+
+    // Add the dot and other stuff
+    buffer.emplace_back( Entry{"."} );
+    buffer.emplace_back( Entry{".."} );
+
+    // add each subdirectory
     for (auto i = 0; i < size; ++i) {
-      buffer.emplace_back( DirectoryEntry{ query.get_string(i, TFS_WG_QUERY_NAME) } );
+      buffer.emplace_back( Entry { query.get_string(i, TFS_WG_QUERY_NAME) } );
     }
+
+    // Sort the directory list by alphabetic order so we can test the code reliably.
+    // TODO: this sort may be better of by being case-insensitive
+    std::sort( begin(buffer), end(buffer), [&](const Entry& a, const Entry& b) {
+        return a.name < b.name;
+        });
+
+    // return the done buffer
+    return { NO_ERR, buffer };
   }
 
 
@@ -82,44 +106,28 @@ namespace {
       return { NO_ERR, handle};
     }
 
+
     // Tries to list a directory and returns the list of file names
     // if successful
     virtual Result<DirectoryList&> read_directory(const PathNode& path, DirectoryList& buffer) {
       // If we are asked to list a file, then we are straight out of luck
       if ( path.level == PathNode::File ) return {-ENOTDIR, buffer };
 
-      // TODO: reserve space here
-
-      // Add the dot and other stuff
-      buffer.emplace_back( DirectoryEntry{"."} );
-      buffer.emplace_back( DirectoryEntry{".."} );
-
-
       switch (path.level) {
 
         case PathNode::Root:
-          {
-            const auto query = PGQuery(connection.get(), TFS_WG_LIST_SITES );
-
-            // Propagate any errors
-            if (!query.ok()) return {query.status(), buffer};
-
-            add_directory_entries( buffer, query );
-          }
-          break;
-
+          return add_directory_entries( buffer, PGQuery(connection.get(), TFS_WG_LIST_SITES ) );
 
         case PathNode::Site:
-          {
-            const auto query = PGQuery(connection.get(), TFS_WG_LIST_PROJECTS,
-               std::array<const char*, 1>{ path.site.c_str() } );
+          return add_directory_entries( buffer,
+              PGQuery(connection.get(), TFS_WG_LIST_PROJECTS,
+                std::array<const char*, 1>{ path.site.c_str() } ));
 
-            // Propagate any errors
-            if (!query.ok()) return {query.status(), buffer};
-
-            add_directory_entries( buffer, query );
-          }
-          break;
+        case PathNode::Project:
+          return add_directory_entries( buffer,
+              PGQuery(connection.get(),
+                TFS_WG_LIST_WORKBOOKS " union all " TFS_WG_LIST_DATASOURCES,
+                std::array<const char*, 2>{ path.site.c_str(), path.project.c_str() } ));
 
         default:
           fprintf(stderr, "Unknown node level found: %u\n", path.level);
@@ -127,7 +135,6 @@ namespace {
 
       }
 
-      return { NO_ERR, buffer };
     }
 
     // Tries to stat a file
