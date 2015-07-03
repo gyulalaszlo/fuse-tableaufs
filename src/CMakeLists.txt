@@ -28,6 +28,9 @@ string(REPLACE ";" " " FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
 message(">> Setting FUSE_CFLAGS_OTHER to ${FUSE_CFLAGS_OTHER_SPLIT}")
 set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 
+
+add_definitions(-DTFS_TEST_SERVER="${TFS_TEST_SERVER_ADDRESS}")
+
 add_library( tableaufs-pgconn
   connection/pgconn.cc
   connection/pg_helpers.cc
@@ -49,6 +52,14 @@ target_link_libraries( tableaufs-pgconn
 
 # Tests
 # -----
+
+function(add_tfs_test test_name files)
+  add_executable( ${test_name} tests/test_runner.cc ${files})
+  target_link_libraries( ${test_name} tableaufs-pgconn gtest)
+  add_test( ${test_name} ${test_name} )
+endfunction()
+
+add_tfs_test( test_readdir tests/test_tfs_postgres_readdir.cc )
 
 # Postgres connection test
 add_executable( pgconn-test tests/test_runner.cc tests/pgconn_interface_tests.cc)

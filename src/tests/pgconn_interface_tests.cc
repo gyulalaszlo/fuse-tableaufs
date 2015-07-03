@@ -1,32 +1,18 @@
 #include "gtest/gtest.h"
 
-#include "connection/tfs_postgres.hpp"
-#include "connection/tfs_postgres_config.hpp"
-#include "connection/pg_connection.hpp"
 #include "workgroup.h"
-#include "cpp14/make_unique.hpp"
+#include "helper_test_pgconn.hpp"
 
 using namespace tableauFS;
 
-
-enum { DEFAULT_ROOT_MTIME = 1111 };
-const auto test_host = Host{ "54.203.245.18", "8060", "readonly", "onlyread" };
-
-
-std::shared_ptr<TFSPostgres> make_tfs_postgres() {
-  return TFSPostgres::make(
-      std::make_unique<PgConnection>( test_host ),
-      TFSPostgresConfig::with_static_root_mtime(DEFAULT_ROOT_MTIME)
-      );
-}
 
 TEST(TFSPostgresTest, DirStatRoot) {
   auto pg = make_tfs_postgres();
   const auto path = PathNode { PathNode::Root };
   // get some stat
   auto stats = pg->get_attributes( path );
-  EXPECT_TRUE( stats.status.ok() );
-  EXPECT_EQ( stats.value.st_mtime, DEFAULT_ROOT_MTIME);
+  ASSERT_TRUE( stats.status.ok() );
+  ASSERT_EQ( stats.value.st_mtime, DEFAULT_ROOT_MTIME);
 
 }
 
@@ -37,9 +23,9 @@ TEST(TFSPostgresTest, DirStatSite) {
   const auto path = PathNode { PathNode::Site, "Default" };
   // get some stat
   auto stats = pg->get_attributes( path );
-  EXPECT_TRUE( stats.status.ok() );
+  ASSERT_TRUE( stats.status.ok() );
   // for now we hardcode this mtime
-  EXPECT_EQ( 946684800, stats.value.st_mtime );
+  ASSERT_EQ( 946684800, stats.value.st_mtime );
 
 }
 
@@ -49,9 +35,9 @@ TEST(TFSPostgresTest, DirStatInvalidSite) {
   const auto path = PathNode { PathNode::Site, "DefaultInvalidSite" };
   // get some stat
   auto stats = pg->get_attributes( path );
-  EXPECT_FALSE( stats.status.ok() );
+  ASSERT_FALSE( stats.status.ok() );
   // for now we hardcode this mtime
-  //EXPECT_EQ( stats.value.st_mtime, 946684800);
+  //ASSERT_EQ( stats.value.st_mtime, 946684800);
 
 }
 
@@ -61,9 +47,9 @@ TEST(TFSPostgresTest, DirStatProject) {
   const auto path = PathNode { PathNode::Project, "Default", "Tableau Samples" };
   // get some stat
   auto stats = pg->get_attributes( path );
-  EXPECT_TRUE( stats.status.ok() );
+  ASSERT_TRUE( stats.status.ok() );
   // for now we hardcode this mtime
-  EXPECT_EQ( 1432796488, stats.value.st_mtime);
+  ASSERT_EQ( 1432796488, stats.value.st_mtime);
 
 }
 
@@ -73,6 +59,32 @@ TEST(TFSPostgresTest, DirStatInvalidProject) {
   const auto path = PathNode { PathNode::Project, "Default", "test-invalid-project" };
   // get some stat
   auto stats = pg->get_attributes( path );
-  EXPECT_FALSE( stats.status.ok() );
+  ASSERT_FALSE( stats.status.ok() );
 }
+
+// Files
+
+TEST(TFSPostgresTest, DirStatFile) {
+  auto pg = make_tfs_postgres();
+
+  const auto path = PathNode { PathNode::File, "Default", "Tableau Samples", "Superstore.twbx" };
+  // get some stat
+  auto stats = pg->get_attributes( path );
+  ASSERT_TRUE( stats.status.ok() );
+  // for now we hardcode this mtime
+  ASSERT_EQ( 1432796488, stats.value.st_mtime);
+  ASSERT_EQ( 203968, stats.value.st_size);
+
+}
+
+
+TEST(TFSPostgresTest, DirStatInvalidFile) {
+  auto pg = make_tfs_postgres();
+
+  const auto path = PathNode { PathNode::File, "Default", "Tableau Samples", "Bad Superstore.twbx" };
+  // get some stat
+  auto stats = pg->get_attributes( path );
+  ASSERT_FALSE( stats.status.ok() );
+}
+
 

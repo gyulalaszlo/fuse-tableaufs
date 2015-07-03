@@ -19,7 +19,7 @@ namespace tableauFS {
 
     // Tries to list a directory and returns the list of file names
     // if successful
-    virtual Result<DirectoryList&> read_directory(DirectoryList& buffer) = 0;
+    virtual Result<DirectoryList&> read_directory(const PathNode& path, DirectoryList& buffer) = 0;
 
     // Tries to stat a file
     virtual Result<struct stat> get_attributes(const PathNode& path) = 0;

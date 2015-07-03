@@ -1,5 +1,6 @@
 #include "parse_path.hpp"
 
+#include <errno.h>
 #include <cstdio>
 #include <cstring>
 

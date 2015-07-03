@@ -38,9 +38,15 @@ namespace tableauFS {
   using ROBuffer = slice<const char>;
   using RWBuffer = slice<char>;
 
+  using Loid = uint64_t;
+
+  struct DirectoryEntry {
+    std::string name;
+    Loid loid;  // repo id, if file
+  };
 
   // TODO: this is seriously bad...
-  using DirectoryList = std::vector< std::string >;
+  using DirectoryList = std::vector<DirectoryEntry>;
 
   // A file node for path
   struct PathNode {

@@ -1,7 +1,9 @@
 #include "tfs_postgres.hpp"
 
-#include "libpq-fe.h"
-#include "libpq/libpq-fs.h"
+#include <libpq-fe.h>
+#include <libpq/libpq-fs.h>
+#include <errno.h>
+#include <array>
 
 #include "cpp14/make_unique.hpp"
 #include "cpp14/scope_exit.hpp"
@@ -10,6 +12,7 @@
 #include "tfs_postgres_config.hpp"
 
 #include "pg_connection.hpp"
+#include "pg_query.hpp"
 
 using namespace tableauFS;
 
@@ -34,6 +37,18 @@ namespace {
         node.st_nlink = 1;
       }
       return node;
+  }
+
+
+
+  // Add all the directory entries to the buffer
+  template <typename Buffer>
+  void add_directory_entries( Buffer& buffer, const PGQuery& query ) {
+    // add each subdirectory
+    const auto size = query.size();
+    for (auto i = 0; i < size; ++i) {
+      buffer.emplace_back( DirectoryEntry{ query.get_string(i, TFS_WG_QUERY_NAME) } );
+    }
   }
 
 
@@ -69,7 +84,49 @@ namespace {
 
     // Tries to list a directory and returns the list of file names
     // if successful
-    virtual Result<DirectoryList&> read_directory(DirectoryList& buffer) {
+    virtual Result<DirectoryList&> read_directory(const PathNode& path, DirectoryList& buffer) {
+      // If we are asked to list a file, then we are straight out of luck
+      if ( path.level == PathNode::File ) return {-ENOTDIR, buffer };
+
+      // TODO: reserve space here
+
+      // Add the dot and other stuff
+      buffer.emplace_back( DirectoryEntry{"."} );
+      buffer.emplace_back( DirectoryEntry{".."} );
+
+
+      switch (path.level) {
+
+        case PathNode::Root:
+          {
+            const auto query = PGQuery(connection.get(), TFS_WG_LIST_SITES );
+
+            // Propagate any errors
+            if (!query.ok()) return {query.status(), buffer};
+
+            add_directory_entries( buffer, query );
+          }
+          break;
+
+
+        case PathNode::Site:
+          {
+            const auto query = PGQuery(connection.get(), TFS_WG_LIST_PROJECTS,
+               std::array<const char*, 1>{ path.site.c_str() } );
+
+            // Propagate any errors
+            if (!query.ok()) return {query.status(), buffer};
+
+            add_directory_entries( buffer, query );
+          }
+          break;
+
+        default:
+          fprintf(stderr, "Unknown node level found: %u\n", path.level);
+          return {-EINVAL, buffer };
+
+      }
+
       return { NO_ERR, buffer };
     }
 

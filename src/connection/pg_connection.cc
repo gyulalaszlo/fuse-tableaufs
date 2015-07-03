@@ -1,5 +1,6 @@
 #include "pg_connection.hpp"
 
+#include <errno.h>
 #include "pg_helpers.hpp"
 
 namespace tableauFS {

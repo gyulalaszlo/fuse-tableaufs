@@ -26,6 +26,11 @@ To compile the application you need at `cmake` (=> 2.6), `libpq` (>= 9.0) and `f
 ### Build
 Just type `cmake . && make && make install`and you will have everything installed. 
 
+### Running the tests
+To build and run the tests, please set the TFS_TEST_SERVER_ADDRESS CMake
+variable to the address of a valid Tableau Server.
+
+
 ### Configuring tableau server database
 
 To exploit all features (include read-write mode) you need `tblwgadmin` or similar user with superuser privilege while for read only access `readonly` user is almost enough.  

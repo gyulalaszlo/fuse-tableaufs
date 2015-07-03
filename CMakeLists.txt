@@ -25,6 +25,9 @@ cmake_minimum_required(VERSION 2.6)
 project(fuse-tableaufs)
 enable_testing()
 
+set( TFS_TEST_SERVER_ADDRESS   "52.13.81.43"   CACHE STRING "The address of the Tableu Server for testing." )
+
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseCxx11)
 include(DefaultCompilerFlags)
