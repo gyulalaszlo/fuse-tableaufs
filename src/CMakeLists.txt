@@ -60,16 +60,9 @@ function(add_tfs_test test_name files)
 endfunction()
 
 add_tfs_test( test_readdir tests/test_tfs_postgres_readdir.cc )
-
-# Postgres connection test
-add_executable( pgconn-test tests/test_runner.cc tests/pgconn_interface_tests.cc)
-target_link_libraries( pgconn-test tableaufs-pgconn gtest)
-add_test( pgconn pgconn-test )
-
-# Path parser test
-add_executable( parse-path-test tests/test_runner.cc tests/parse_path_test.cc)
-target_link_libraries( parse-path-test tableaufs-pgconn gtest)
-add_test( parse-path parse-path-test )
+add_tfs_test( test_stat tests//test_tfs_postgres_stat.cc )
+add_tfs_test( test_parse_path tests/test_parse_path.cc )
+add_tfs_test( test_open_file tests/test_open_file.cc )
 
 
 # Add the main executable
@@ -112,3 +105,4 @@ if(APPLE)
     )
   ")
 endif()
+

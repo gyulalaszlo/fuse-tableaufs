@@ -70,6 +70,8 @@ namespace tableauFS {
   };
 
 
+  // Pre-declare these
+  class PGQuery;
   class PgConnection;
   class TFSPostgres;
   class TFSPostgresConfig;

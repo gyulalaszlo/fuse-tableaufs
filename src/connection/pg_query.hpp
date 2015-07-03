@@ -56,7 +56,7 @@ namespace tableauFS {
       size_t size() const { return PQntuples(res.value); }
 
 
-      // The result so erros can be forwarded
+      // The result so errors can be forwarded
       Result<PGresult*> res;
   };
 }

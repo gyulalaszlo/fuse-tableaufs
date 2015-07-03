@@ -63,4 +63,22 @@ namespace tableauFS {
     return {NO_ERR, res};
   }
 
+  void PgConnection::run_statement( const char* sql ) {
+    PQclear( PQexec( conn, sql ) );
+  }
+
+  PgConnection::Transaction::Transaction(PgConnection* conn)
+    : conn(conn)
+  {
+    if (conn->ok()) conn->run_statement("BEGIN");
+    else fprintf(stderr, "Cannot start transaction: not connected\n");
+  }
+
+  PgConnection::Transaction::~Transaction()
+  {
+    if (conn->ok()) conn->run_statement("END");
+    else fprintf(stderr, "Cannot end transaction: not connected\n");
+  }
+
+
 }

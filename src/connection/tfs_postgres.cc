@@ -3,7 +3,9 @@
 #include <libpq-fe.h>
 #include <libpq/libpq-fs.h>
 #include <errno.h>
+
 #include <array>
+#include <algorithm>
 
 #include "cpp14/make_unique.hpp"
 #include "cpp14/scope_exit.hpp"
@@ -15,6 +17,8 @@
 #include "pg_query.hpp"
 
 using namespace tableauFS;
+
+
 
 namespace {
 
@@ -40,6 +44,15 @@ namespace {
   }
 
 
+  // Replace any invalid characters in filenames
+  //
+  // Instead of references we try to use move semantics to
+  // make this memory effective.
+  std::string sanitize_filename( std::string filename) {
+    std::replace( begin(filename), end(filename), '/', '_' );
+    // return the reference so we can chain these calls
+    return filename;
+  }
 
   // Add all the directory entries to the buffer
   template <typename Buffer>
@@ -62,7 +75,7 @@ namespace {
 
     // add each subdirectory
     for (auto i = 0; i < size; ++i) {
-      buffer.emplace_back( Entry { query.get_string(i, TFS_WG_QUERY_NAME) } );
+      buffer.emplace_back( Entry { sanitize_filename( query.get_string(i, TFS_WG_QUERY_NAME)) } );
     }
 
     // Sort the directory list by alphabetic order so we can test the code reliably.
@@ -102,8 +115,19 @@ namespace {
 
     // Tries to open a file and returns the file handle if successful
     virtual Result<FHandle> open_file(const PathNode& path, int mode) {
-      const FHandle handle = 0;
-      return { NO_ERR, handle};
+      if (path.level != PathNode::File) return {-EISDIR, 0};
+
+      const auto q = PGQuery( connection.get(),
+          TFS_WG_LIST_WORKBOOKS " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(twb) ") "
+          "union all "
+          TFS_WG_LIST_DATASOURCES " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(tds) ") ",
+          std::array<const char*, 3>{ path.site.c_str(), path.project.c_str(), path.file.c_str() }
+          );
+
+      // Propagate any errors
+      if (!q.ok()) return {q.status(), 0};
+
+      return { NO_ERR, q.get_uint64(0, TFS_WG_QUERY_CONTENT)};
     }
 
 
@@ -222,7 +246,17 @@ namespace {
     }
 
     // Read the contents of a file into a buffer and returns the buffer itself
-    virtual Result<RWBuffer> read_file(FHandle handle, RWBuffer buf, off_t offset) {
+    virtual Result<RWBuffer> read_file(FHandle handle, RWBuffer buf, size_t size, off_t offset) {
+      // LO operations only supported within transactions
+      // On our FS one read is one transaction
+      // While libpq is thread safe, still, we cannot have parallel
+      // transactions from multiple threads on the same connection
+      //
+      // start a transaction that finishes when we go out of scope
+      auto transaction = PgConnection::Transaction(connection.get());
+
+      fprintf(stderr, "-> read_file(): reading from Loid:%llu (l:%lu:o:%tu)\n", handle, size, offset);
+
       return {NO_ERR, buf};
     }
 

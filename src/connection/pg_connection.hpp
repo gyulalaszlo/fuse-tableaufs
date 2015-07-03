@@ -25,12 +25,23 @@ namespace tableauFS {
       }
 
 
+      // A RAII wrapper for a transaction
+      struct Transaction {
+        Transaction(PgConnection* conn);
+        ~Transaction();
+
+        PgConnection* conn;
+      };
+
+
       MKZ_NON_COPYABLE(PgConnection);
       MKZ_MOVABLE(PgConnection);
 
       // is the connection established?
       bool ok() const { return conn != nullptr; }
 
+      // run primitive statements like transaction start/stop
+      void run_statement( const char* sql );
 
     private:
       Host host;

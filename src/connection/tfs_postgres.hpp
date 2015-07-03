@@ -25,7 +25,7 @@ namespace tableauFS {
     virtual Result<struct stat> get_attributes(const PathNode& path) = 0;
 
     // Read the contents of a file into a buffer and returns the buffer itself
-    virtual Result<RWBuffer> read_file(FHandle handle, RWBuffer buf, off_t offset) = 0;
+    virtual Result<RWBuffer> read_file(FHandle handle, RWBuffer buf, size_t size, off_t offset) = 0;
 
     // Write the contents of the buffer to the file and return the success value
     virtual Result<void> write_file(FHandle handle, ROBuffer buf, off_t offset) = 0;
