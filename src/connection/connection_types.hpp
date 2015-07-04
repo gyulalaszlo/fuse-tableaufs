@@ -20,8 +20,9 @@ extern "C" {
 namespace tableauFS {
 
   enum {
-    // The block size of the TableauFS
-    BlockSize = 8196,
+    // The block size of the TableauFS. Larger block size results in
+    // less blocks to transfer.
+    BlockSize = 8196 * 4,
 
     BufSize = 1024,
 

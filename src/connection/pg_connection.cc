@@ -8,6 +8,7 @@ namespace {
   enum OpType { Read, Write, Truncate };
 
   Result< slice<char> > io_op_result( int ret_val, slice<char> buffer ) {
+    fprintf(stderr, "<- IO Result: %i -- %d bytes\n", ret_val, buffer.size() );
     if (ret_val < 0 ) { return {ret_val, buffer}; }
     return {NO_ERR, monkeykingz::make_slice( buffer.data(), ret_val) };
   }
@@ -22,10 +23,9 @@ namespace {
     // Any large object descriptors that remain open at the end of a transaction
     // will be closed automatically.
     auto conn = connection->conn;
-    fprintf(stderr, "Cannot start transaction: not connected\n");
     auto fd = lo_open(conn, (Oid)loid, INV_READ);
 
-    fprintf(stderr, "-> read_file(): reading from Loid:%llu fd:%i (l:%lu:o:%tu)\n", loid, fd, size, offset);
+    fprintf(stderr, "-> io_op(): doing [%i] from Loid:%llu fd:%i (l:%lu:o:%tu)\n", op, loid, fd, size, offset);
 
 
     if (
@@ -136,19 +136,20 @@ namespace tableauFS {
   {
     if (conn->ok()) {
       conn->run_statement("BEGIN");
-      fprintf(stderr, "Starting transaction\n");
-     }
-    else fprintf(stderr, "Cannot start transaction: not connected\n");
+      fprintf(stderr, "========= Transaction START ===========\n");
+    } else {
+      fprintf(stderr, "Cannot start transaction: not connected\n");
+    }
   }
 
   PgConnection::Transaction::~Transaction()
   {
     if (conn->ok()) {
       conn->run_statement("END");
-
-      fprintf(stderr, "Ending transaction\n");
+      fprintf(stderr, "========= Transaction END ===========\n");
+    } else {
+      fprintf(stderr, "Cannot end transaction: not connected\n");
     }
-    else fprintf(stderr, "Cannot end transaction: not connected\n");
   }
 
 

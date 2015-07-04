@@ -16,6 +16,8 @@ extern "C" {
 }
 
 #include <memory>
+#include <map>
+#include <utility>
 #include "cpp14/make_unique.hpp"
 #include "connection/parse_path.hpp"
 #include "connection/tfs_postgres_config.hpp"
@@ -35,38 +37,60 @@ namespace {
 
   std::shared_ptr<TFSPostgres> tfs;
 
+
+  template <class K, class V>
+  struct Cache {
+
+    Cache() : cache() {}
+    ~Cache() {}
+
+    template <class Pred>
+    V get( const K& key, Pred pred) {
+      if (cache.count(key) > 0) { 
+        fprintf(stderr, "------- Getting for '%s' from cache -----\n", key.c_str());
+        return cache[key];
+      }
+
+      const auto res = pred();
+      fprintf(stderr, "------- Setting '%s' to cache -----\n", key.c_str());
+      cache.emplace( std::make_pair( key, res));
+      return res;
+    }
+
+    std::map<K,V> cache;
+  };
+
+
+
+  struct CachedStat {
+    struct stat st;
+    int result;
+  };
+
+  Cache< std::string, CachedStat > stat_cache;
+  std::map<std::string, CachedStat> stat_map;
+
   int tableau_getattr(const char *path, struct stat *stbuf)
   {
-    //int res = 0;
-    //tfs_wg_node_t node;
+    const auto path_str = std::string(path);
+    auto stat = stat_cache.get( path_str, [&](){
 
-    //TFS_WG_PARSE_PATH(path, &node);
+        const auto path_node =  parse_tableau_path(path);
+        if (!path_node.status.ok()) return CachedStat{*stbuf, path_node.status.err};
 
-    //memcpy(stbuf, &(node.st), sizeof(struct stat));
-    const auto path_node =  parse_tableau_path(path);
-    if (!path_node.status.ok()) return path_node.status.err;
+        auto stats = tfs->get_attributes(path_node.value);
+        if ( !stats.status.ok() ) return CachedStat{*stbuf, stats.status.err};
 
-    auto stats = tfs->get_attributes(path_node.value);
-    if ( !stats.status.ok() ) return stats.status.err;
+        return CachedStat{stats.value, stats.status.err};
+        });
 
-    memcpy(stbuf, &stats.value, sizeof(struct stat));
-    return stats.status.err;
+    memcpy(stbuf, &stat.st, sizeof(struct stat));
+    return stat.result;
   }
 
   int tableau_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
       off_t offset, struct fuse_file_info *fi)
   {
-    //tfs_wg_node_t node;
-
-    //TFS_WG_PARSE_PATH(path, &node);
-
-    //if ( node.level == TFS_WG_FILE )
-      //return -ENOTDIR;
-
-    //filler(buf, ".", NULL, 0);
-    //filler(buf, "..", NULL, 0);
-
-    //TFS_WG_readdir(&node, buf, filler);
     const auto path_node =  parse_tableau_path(path);
     if (!path_node.status.ok()) return path_node.status.err;
 
@@ -80,7 +104,6 @@ namespace {
 
     for (const auto& e : dir_list.value) {
       filler(buf, e.name.c_str(), NULL, 0 );
-      fprintf(stderr, "  Adding file: [] %s\n", e.name.c_str());
     }
 
     return 0;
@@ -88,8 +111,6 @@ namespace {
 
   int tableau_open(const char *path, struct fuse_file_info *fi)
   {
-    //tfs_wg_node_t node;
-    int ret;
     const auto path_node =  parse_tableau_path(path);
     if (!path_node.status.ok()) return path_node.status.err;
 
@@ -100,28 +121,19 @@ namespace {
     // during read we can return smaller buffer than
     // requested
     fi->direct_io = 1;
-
-    //TFS_WG_PARSE_PATH(path, &node);
-
-    //ret = TFS_WG_open(&node, fi->flags, &(fi->fh) );
-    //fi->direct_io = 1; // during read we can return smaller buffer than
-    //// requested
-
     return 0;
   }
 
   int tableau_read(const char *path, char *buf, size_t size, off_t offset,
       struct fuse_file_info *fi)
   {
-    //return TFS_WG_IO_operation(TFS_WG_READ, fi->fh, NULL, buf, size, offset);
-    auto buffer = std::vector<char>(size);
-    auto res = tfs->read_file( fi->fh, monkeykingz::make_slice( buffer ), size, offset );
+    auto res = tfs->read_file( fi->fh, monkeykingz::make_slice( buf, size ), size, offset );
 
     if (!res.status.ok()) return res.status.err;
 
 
-    
-    return 0;
+
+    return res.value.size();
   }
 
   int tableau_write(const char *path, const char *buf, size_t size, off_t offset,
@@ -210,12 +222,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  // Connect to PG
-  printf("Connecting to %s@%s:%s\n", tableau_cmdargs.pguser,
-      tableau_cmdargs.pghost, tableau_cmdargs.pgport );
-
   const auto host = Host{ tableau_cmdargs.pghost, tableau_cmdargs.pgport, tableau_cmdargs.pguser, tableau_cmdargs.pgpass };
-
 
   tfs = std::move( make_tfs_postgres( host ) );
 
@@ -231,9 +238,6 @@ int main(int argc, char *argv[])
   for (const auto& e : dir_list.value) {
     fprintf(stderr, "  [] %s\n", e.name.c_str());
   }
-  //TFS_WG_connect_db( tableau_cmdargs.pghost, tableau_cmdargs.pgport,
-      //tableau_cmdargs.pguser, tableau_cmdargs.pgpass);
-
 
   //struct TFS_PgActor* actor = TFS_makeActor();
   //TFS_destroyActor(actor);
