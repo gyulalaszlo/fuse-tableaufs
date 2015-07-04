@@ -3,10 +3,10 @@
 #include <string>
 #include <memory>
 
-namespace tableauFS {
-
-  namespace connection {
-
+namespace tableauFS
+{
+  namespace connection
+  {
     // Description of the host
     struct Host {
       std::string host;
@@ -25,8 +25,7 @@ namespace tableauFS {
 
     // Wrap up an actor.
     struct Actor {
-
-      Actor( Host host, Endpoint endpoint);
+      Actor(Host host, Endpoint endpoint);
       ~Actor();
 
       // We love C++11 and move contructors
@@ -43,8 +42,5 @@ namespace tableauFS {
       // Wrap up the state
       std::unique_ptr<State> state;
     };
-
-
   }
 }
-

@@ -19,8 +19,7 @@
   className& operator=(const className&) = delete;
 #endif
 
-
-#define MKZ_MOVABLE(className) \
+#define MKZ_MOVABLE(className)            \
   className(className&& other) = default; \
   className& operator=(className&& other) = default;
 

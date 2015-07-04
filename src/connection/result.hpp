@@ -1,7 +1,7 @@
 #pragma once
 
-namespace tableauFS {
-
+namespace tableauFS
+{
   // Wrap the error code type
   using ErrorCode = int;
 
@@ -22,7 +22,6 @@ namespace tableauFS {
     // The value to store
     const Val value;
   };
-
 
   // A POD wrapper for the result of a popssible error operation
   template <>

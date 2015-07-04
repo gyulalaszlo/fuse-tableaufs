@@ -9,12 +9,10 @@
 
 namespace monkeykingz
 {
-
   /// Represents a block of homogenous stream of elements of type T
   /// in memory
   template <typename T>
-  struct slice
-  {
+  struct slice {
     T* values;
     size_t count;
 

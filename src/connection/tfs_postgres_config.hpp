@@ -3,10 +3,11 @@
 #include <memory>
 #include "connection_types.hpp"
 
-namespace tableauFS {
-
+namespace tableauFS
+{
   // Interface class for configuration (dependency injection)
-  class TFSPostgresConfig {
+  class TFSPostgresConfig
+  {
     MKZ_INTERFACE(TFSPostgresConfig);
 
     using Ptr = std::unique_ptr<TFSPostgresConfig>;
@@ -16,6 +17,4 @@ namespace tableauFS {
     static Ptr with_dynamic_root_mtime();
     static Ptr with_static_root_mtime(time_t default_mtime);
   };
-
 }
-

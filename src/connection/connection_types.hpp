@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <string>
 #include <vector>
 #include "slice.hpp"
@@ -9,16 +8,15 @@
 // include some default macros for EZ LIFE
 #include "cpp14/markup.hpp"
 
-
 // pre-declare some postgres stuff so we dont need to include the pg headers
 // in other headers unless inline functions make it necessary
 extern "C" {
-  typedef struct pg_conn PGconn;
-  typedef struct pg_result PGresult;
+typedef struct pg_conn PGconn;
+typedef struct pg_result PGresult;
 }
 
-namespace tableauFS {
-
+namespace tableauFS
+{
   enum {
     // The block size of the TableauFS. Larger block size results in
     // less blocks to transfer.
@@ -31,7 +29,8 @@ namespace tableauFS {
   };
 
   // Alias the slice type here
-  template <typename T> using slice = monkeykingz::slice<T>;
+  template <typename T>
+  using slice = monkeykingz::slice<T>;
 
   // A file handle to make sense of it
   using FHandle = uint64_t;
@@ -70,12 +69,9 @@ namespace tableauFS {
     std::string password;
   };
 
-
   // Pre-declare these
   class PGQuery;
   class PgConnection;
   class TFSPostgres;
   class TFSPostgresConfig;
-
 }
-
