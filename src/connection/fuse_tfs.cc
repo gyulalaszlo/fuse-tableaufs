@@ -128,14 +128,11 @@ namespace {
       struct fuse_file_info *fi)
   {
     auto res = tfs->read_file( fi->fh, monkeykingz::make_slice( buf, size ), size, offset );
-
     if (!res.status.ok()) return res.status.err;
-
-
-
     return res.value.size();
   }
 
+#ifdef TFS_ALLOW_WRITE
   int tableau_write(const char *path, const char *buf, size_t size, off_t offset,
       struct fuse_file_info *fi)
   {
@@ -156,6 +153,7 @@ namespace {
 
     return ret;
   }
+#endif
 
 
   // A descriptor for all the possible FUSE operations on a tableau endpoint
@@ -164,8 +162,10 @@ namespace {
     .readdir        = tableau_readdir,
     .open           = tableau_open,
     .read           = tableau_read,
+#ifdef TFS_ALLOW_WRITE
     .write          = tableau_write,
     .truncate       = tableau_truncate,
+#endif
   };
 
 
