@@ -1,6 +1,10 @@
 #pragma once
 
-#include "libpq-fe.h"
+extern "C" {
+#include <libpq-fe.h>
+#include <libpq/libpq-fs.h>
+}
+
 #include "result.hpp"
 #include "connection_types.hpp"
 

@@ -247,17 +247,7 @@ namespace {
 
     // Read the contents of a file into a buffer and returns the buffer itself
     virtual Result<RWBuffer> read_file(FHandle handle, RWBuffer buf, size_t size, off_t offset) {
-      // LO operations only supported within transactions
-      // On our FS one read is one transaction
-      // While libpq is thread safe, still, we cannot have parallel
-      // transactions from multiple threads on the same connection
-      //
-      // start a transaction that finishes when we go out of scope
-      auto transaction = PgConnection::Transaction(connection.get());
-
-      fprintf(stderr, "-> read_file(): reading from Loid:%llu (l:%lu:o:%tu)\n", handle, size, offset);
-
-      return {NO_ERR, buf};
+      return connection->read_lo_block(handle, buf, size, offset);
     }
 
     // Write the contents of the buffer to the file and return the success value

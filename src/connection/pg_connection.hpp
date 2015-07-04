@@ -30,8 +30,17 @@ namespace tableauFS {
         Transaction(PgConnection* conn);
         ~Transaction();
 
+        MKZ_NON_COPYABLE(Transaction);
+        MKZ_MOVABLE(Transaction);
+
         PgConnection* conn;
       };
+
+      // Gets a transaction
+      Transaction transaction() { return Transaction(this); }
+
+      // Read a block of bytes from a LOB
+      Result< slice<char>> read_lo_block( Loid loid, slice<char> buffer, size_t size, off_t offset );
 
 
       MKZ_NON_COPYABLE(PgConnection);
@@ -43,7 +52,6 @@ namespace tableauFS {
       // run primitive statements like transaction start/stop
       void run_statement( const char* sql );
 
-    private:
       Host host;
       PGconn* conn;
   };

@@ -30,6 +30,7 @@ set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 
 
 add_definitions(-DTFS_TEST_SERVER="${TFS_TEST_SERVER_ADDRESS}")
+add_definitions(-DTFS_TEST_FILE_DIR="${CMAKE_SOURCE_DIR}/test-data/files/")
 
 add_library( tableaufs-pgconn
   connection/pgconn.cc
@@ -63,6 +64,25 @@ add_tfs_test( test_readdir tests/test_tfs_postgres_readdir.cc )
 add_tfs_test( test_stat tests//test_tfs_postgres_stat.cc )
 add_tfs_test( test_parse_path tests/test_parse_path.cc )
 add_tfs_test( test_open_file tests/test_open_file.cc )
+add_tfs_test( test_read_file tests/test_read_file.cc )
+
+# Add the main executable
+add_executable( fuse-tfs
+  connection/fuse_tfs.cc
+
+  )
+
+# Set the compile flags on a pre-target basis
+set_target_properties(fuse-tfs PROPERTIES
+  COMPILE_FLAGS ${TFS_COMPILE_FLAGS}
+  )
+
+# Link it with all the good stuff
+target_link_libraries( fuse-tfs
+  ${POSTGRES_LIBRARY}
+  ${FUSE_LDFLAGS}
+  tableaufs-pgconn
+  )
 
 
 # Add the main executable

@@ -1,0 +1,3 @@
+"id","name","owner_id","created_at","updated_at","state","description","site_id","special","luid"
+1,"default",1,"2015-02-06 00:47:48.218","2015-02-06 00:49:13.762","active","The default project that was automatically created by Tableau.",1,1,"0868a26e-ad9a-11e4-98a7-c33830576210"
+2,"Tableau Samples",5,"2015-02-06 00:52:24.55","2015-05-28 07:01:28.935","active","Sample workbooks provided by Tableau Software.",1,,"265cc145-69de-421b-ab5a-2285358e7731"

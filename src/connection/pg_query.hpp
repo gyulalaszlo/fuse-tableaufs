@@ -1,8 +1,6 @@
 #pragma once
 
-#include <libpq-fe.h>
-#include <libpq/libpq-fs.h>
-
+#include "pg_helpers.hpp"
 
 #include "result.hpp"
 #include "pg_connection.hpp"
