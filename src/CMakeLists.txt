@@ -51,6 +51,9 @@ add_definitions(-DTFS_TEST_FILE_DIR="${CMAKE_SOURCE_DIR}/test-data/files/")
 add_definitions(-DTFS_COMPILED_WITH="${CMAKE_CXX_FLAGS_INIT} ${CMAKE_CXX_FLAGS}")
 
 add_library( tableaufs-pgconn
+
+  utils/logger.cc
+
   connection/pgconn.cc
   connection/pg_helpers.cc
   connection/pg_connection.cc

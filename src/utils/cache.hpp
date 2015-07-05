@@ -23,18 +23,16 @@
    */
 
 #include <cstdio>
-#include <syslog.h>
 
 #include <map>
 #include <string>
+
+#include "utils/logger.hpp"
 
 namespace tableauFS
 {
   template <class K, class V>
   struct Cache {
-    // Set the logging level of the cache in syslog
-    enum { LogLevel = LOG_WARNING };
-
     // construct a cache without a name
     Cache() : name(""), cache() {}
     // construct a cache with a name
@@ -45,14 +43,14 @@ namespace tableauFS
     V get(const K& key, Pred pred)
     {
       if (cache.count(key) > 0) {
-        syslog(LogLevel, "[CACHE] Getting %s for '%s' from cache -----",
-               name.c_str(), key.c_str());
+        log::info("[CACHE] Getting %s for '%s' from cache -----", name.c_str(),
+                  key.c_str());
         return cache[key];
       }
 
       const auto res = pred();
-      syslog(LogLevel, "[CACHE] Saving %s '%s' to cache -----", name.c_str(),
-             key.c_str());
+      log::info("[CACHE] Saving %s '%s' to cache -----", name.c_str(),
+                key.c_str());
       cache.emplace(std::make_pair(key, res));
       return res;
     }

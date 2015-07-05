@@ -17,6 +17,7 @@ extern "C" {
 #include <utility>
 #include "cpp14/make_unique.hpp"
 #include "utils/cache.hpp"
+#include "utils/logger.hpp"
 #include "connection/parse_path.hpp"
 #include "connection/tfs_postgres_config.hpp"
 #include "connection/tfs_postgres.hpp"
@@ -97,18 +98,11 @@ namespace
       auto dir_list = tfs->read_directory(path_node.value, dir_cache);
 
       if (dir_list.failed()) {
-        syslog(LOG_WARNING,
-               "Cannot get the list of the directory '%s' ERROR:'%i'\n", path,
-               dir_list.err);
+        log::warn("Cannot get the list of the directory '%s' ERROR:'%i'\n",
+                  path, dir_list.err);
       }
 
       return {dir_list.err, dir_list.value};
-
-      //// get the stats
-      // auto stats = tfs->get_attributes(path_node.value);
-      // if (!stats.ok()) return {*stbuf, stats.err};
-
-      // return {stats.value, stats.err};
     });
 
     if (stat.result != 0) return stat.result;
@@ -118,26 +112,6 @@ namespace
     }
 
     return stat.result;
-
-    ///
-
-    // const auto path_node = parse_tableau_path(path);
-    // if (!path_node.ok()) return path_node.err;
-
-    // auto dir_cache = DirectoryList{};
-    // auto dir_list = tfs->read_directory(path_node.value, dir_cache);
-
-    // if (!dir_list.ok()) {
-    // fprintf(stderr, "Cannot get the list of the directory '%s' ERROR:'%i'\n",
-    // path, dir_list.err);
-    // return dir_list.err;
-    //}
-
-    // for (const auto& e : dir_list.value) {
-    // filler(buf, e.name.c_str(), NULL, 0);
-    //}
-
-    // return 0;
   }
 
   int tableau_open(const char* path, struct fuse_file_info* fi)
