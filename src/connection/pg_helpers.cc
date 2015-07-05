@@ -17,7 +17,8 @@ namespace tableauFS
   {
     s << "Host { "
       << " host:" << host.host << " port:" << host.port << " user:" << host.user
-      << " password:" << host.password << " }";
+      << " password:****"
+      << " }";
     return s;
   }
 

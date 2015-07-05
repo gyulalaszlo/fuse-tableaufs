@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include "pg_helpers.hpp"
+#include "utils/logger.hpp"
 
 using namespace tableauFS;
 namespace
@@ -10,7 +11,8 @@ namespace
 
   Result<slice<char>> io_op_result(int ret_val, slice<char> buffer)
   {
-    fprintf(stderr, "<- IO Result: %i -- %lu bytes\n", ret_val, buffer.size());
+    log::info("[SQL] [LO] <- IO Result: %i -- %lu bytes\n", ret_val,
+              buffer.size());
     if (ret_val < 0) {
       return {ret_val, buffer};
     }
@@ -30,9 +32,10 @@ namespace
     auto conn = connection->conn;
     auto fd = lo_open(conn, (Oid)loid, INV_READ);
 
-    fprintf(stderr,
-            "-> io_op(): doing [%i] from Loid:%llu fd:%i (l:%lu:o:%tu)\n", op,
-            loid, fd, size, offset);
+    log::info(
+        "[SQL] [LO] -> io_op(): doing [%i] from Loid:%llu fd:%i "
+        "(l:%lu:o:%tu)\n",
+        op, loid, fd, size, offset);
 
     if (
 #ifdef HAVE_LO_LSEEK64
@@ -80,8 +83,8 @@ namespace tableauFS
     // closes the connection if the connection is a valid one
     if (conn != nullptr) {
       PQfinish(conn);
-      fprintf(stderr, "Disconnected from '%s:%s'...\n", host.host.c_str(),
-              host.port.c_str());
+      log::info("[SQL] Disconnected from '%s:%s'...\n", host.host.c_str(),
+                host.port.c_str());
     }
   }
 
@@ -92,9 +95,9 @@ namespace tableauFS
     // fail if no connection
     if (!ok()) return {-EINVAL, nullptr};
 
-    fprintf(stderr, "Running SQL: '%s'\n", sql);
+    log::info("[SQL] Running SQL: '%s'\n", sql);
     for (uint32_t i = 0; i < nParams; ++i) {
-      fprintf(stderr, "  param $%d : '%s'\n", i + 1, paramValues[i]);
+      log::info("[SQL]  param $%d : '%s'\n", i + 1, paramValues[i]);
     }
 
     auto res = PQexecParams(conn, sql, nParams, nullptr, paramValues,
@@ -103,8 +106,8 @@ namespace tableauFS
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
       // Debug if we failed
-      fprintf(stderr, "SQL Exec Failed: '%s' entries failed: %s/%s", sql,
-              PQresultErrorMessage(res), PQerrorMessage(conn));
+      log::error("[SQL] Exec Failed: '%s' entries failed: %s/%s", sql,
+                 PQresultErrorMessage(res), PQerrorMessage(conn));
       // TODO: error handling
       return {-EINVAL, nullptr};
     }
@@ -131,9 +134,9 @@ namespace tableauFS
   {
     if (conn->ok()) {
       conn->run_statement("BEGIN");
-      fprintf(stderr, "========= Transaction START ===========\n");
+      log::info("[SQL] ========= Transaction START ===========\n");
     } else {
-      fprintf(stderr, "Cannot start transaction: not connected\n");
+      log::error("[SQL] Cannot start transaction: not connected\n");
     }
   }
 
@@ -141,9 +144,9 @@ namespace tableauFS
   {
     if (conn->ok()) {
       conn->run_statement("END");
-      fprintf(stderr, "========= Transaction END ===========\n");
+      log::info("[SQL] ========= Transaction END ===========\n");
     } else {
-      fprintf(stderr, "Cannot end transaction: not connected\n");
+      log::error("[SQL] Cannot end transaction: not connected\n");
     }
   }
 }

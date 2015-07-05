@@ -26,7 +26,6 @@ namespace tableauFS
     {
       if (res.value != nullptr) {
         PQclear(res.value);
-        printf("Destroying PGQuery\n");
       }
     }
 

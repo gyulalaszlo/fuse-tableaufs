@@ -244,6 +244,10 @@ int main(int argc, char* argv[])
 
   tfs = std::move(make_tfs_postgres(host));
 
+  fprintf(stderr,
+          "Connected...\nPre-fetching the list of sites to check the "
+          "connection...\n");
+
   // Do a check for the root and list projects
   auto dir_cache = DirectoryList{};
   auto dir_list = tfs->read_directory({PathNode::Root}, dir_cache);
@@ -257,7 +261,8 @@ int main(int argc, char* argv[])
   }
 
   for (const auto& e : dir_list.value) {
-    fprintf(stderr, "  [] %s\n", e.name.c_str());
+    if (e.name[0] == '.') continue;
+    fprintf(stderr, "  -> found site: '%s'\n", e.name.c_str());
   }
 
   // struct TFS_PgActor* actor = TFS_makeActor();
