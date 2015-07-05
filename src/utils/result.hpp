@@ -7,25 +7,23 @@ namespace tableauFS
 
   enum { NO_ERR = 0 };
 
-  struct ErrorResult {
-    // the error code
+  // A POD wrapper for the result of a popssible error operation
+  template <typename Val>
+  struct Result {
     const ErrorCode err;
+    // The value to store
+    const Val value;
 
     bool ok() const { return err == NO_ERR; }
     bool failed() const { return err != NO_ERR; }
   };
 
   // A POD wrapper for the result of a popssible error operation
-  template <typename Val>
-  struct Result {
-    ErrorResult status;
-    // The value to store
-    const Val value;
-  };
-
-  // A POD wrapper for the result of a popssible error operation
   template <>
   struct Result<void> {
-    ErrorResult status;
+    const ErrorCode err;
+
+    bool ok() const { return err == NO_ERR; }
+    bool failed() const { return err != NO_ERR; }
   };
 }

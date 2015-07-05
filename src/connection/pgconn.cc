@@ -5,18 +5,10 @@
 #include <iostream>
 
 #include "tfs_postgres.hpp"
+#include "cpp14/make_unique.hpp"
 
 using std::cerr;
 using std::cout;
-
-namespace std
-{
-  template <typename T, typename... Args>
-  std::unique_ptr<T> make_unique(Args&&... args)
-  {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-  }
-}
 
 namespace
 {
@@ -56,12 +48,3 @@ namespace tableauFS
 }
 
 using namespace tableauFS::connection;
-
-extern "C" {
-void* TFS_makeActor()
-{
-  return new Actor({Host{"54.203.245.18", "5432", "readonly", "onlyread"},
-                    Endpoint{"inproc://some_endpoint"}});
-}
-void TFS_destroyActor(void* actor) { delete (Actor*)actor; }
-}

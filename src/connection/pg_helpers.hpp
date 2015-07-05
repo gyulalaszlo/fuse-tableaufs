@@ -5,7 +5,6 @@ extern "C" {
 #include <libpq/libpq-fs.h>
 }
 
-#include "result.hpp"
 #include "connection_types.hpp"
 
 namespace tableauFS

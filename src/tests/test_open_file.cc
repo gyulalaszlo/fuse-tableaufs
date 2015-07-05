@@ -12,9 +12,9 @@ TEST(TFSOpenFile, OpenDirInvalid)
       pg->open_file({PathNode::Project, "Default", "Tableau Samples"}, 0);
   // auto dir_list = pg->read_directory({PathNode::File, "Default", "Tableau
   // Samples", "Superstore.twbx"}, dir_cache);
-  ASSERT_FALSE(handle.status.ok());
+  ASSERT_FALSE(handle.ok());
   ASSERT_EQ(0, handle.value);
-  ASSERT_EQ(-EISDIR, handle.status.err);
+  ASSERT_EQ(-EISDIR, handle.err);
 }
 
 TEST(TFSOpenFile, InvalidFile)
@@ -26,9 +26,9 @@ TEST(TFSOpenFile, InvalidFile)
       0);
   // auto dir_list = pg->read_directory({PathNode::File, "Default", "Tableau
   // Samples", "Superstore.twbx"}, dir_cache);
-  ASSERT_FALSE(handle.status.ok());
+  ASSERT_FALSE(handle.ok());
   ASSERT_EQ(0, handle.value);
-  ASSERT_EQ(-ENOENT, handle.status.err);
+  ASSERT_EQ(-ENOENT, handle.err);
 }
 
 TEST(TFSOpenFile, Valid)
@@ -39,6 +39,6 @@ TEST(TFSOpenFile, Valid)
       {PathNode::File, "Default", "Tableau Samples", "Superstore.twbx"}, 0);
   // auto dir_list = pg->read_directory({PathNode::File, "Default", "Tableau
   // Samples", "Superstore.twbx"}, dir_cache);
-  ASSERT_TRUE(handle.status.ok());
+  ASSERT_TRUE(handle.ok());
   ASSERT_NE(0, handle.value);
 }

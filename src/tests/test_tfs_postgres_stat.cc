@@ -11,7 +11,7 @@ TEST(TFSPostgresTest, DirStatRoot)
   const auto path = PathNode{PathNode::Root};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_TRUE(stats.status.ok());
+  ASSERT_TRUE(stats.ok());
   ASSERT_EQ(stats.value.st_mtime, DEFAULT_ROOT_MTIME);
 }
 
@@ -22,7 +22,7 @@ TEST(TFSPostgresTest, DirStatSite)
   const auto path = PathNode{PathNode::Site, "Default"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_TRUE(stats.status.ok());
+  ASSERT_TRUE(stats.ok());
   // for now we hardcode this mtime
   ASSERT_EQ(946684800, stats.value.st_mtime);
 }
@@ -34,7 +34,7 @@ TEST(TFSPostgresTest, DirStatInvalidSite)
   const auto path = PathNode{PathNode::Site, "DefaultInvalidSite"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_FALSE(stats.status.ok());
+  ASSERT_FALSE(stats.ok());
   // for now we hardcode this mtime
   // ASSERT_EQ( stats.value.st_mtime, 946684800);
 }
@@ -46,7 +46,7 @@ TEST(TFSPostgresTest, DirStatProject)
   const auto path = PathNode{PathNode::Project, "Default", "Tableau Samples"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_TRUE(stats.status.ok());
+  ASSERT_TRUE(stats.ok());
   // for now we hardcode this mtime
   ASSERT_EQ(1432796488, stats.value.st_mtime);
 }
@@ -59,7 +59,7 @@ TEST(TFSPostgresTest, DirStatInvalidProject)
       PathNode{PathNode::Project, "Default", "test-invalid-project"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_FALSE(stats.status.ok());
+  ASSERT_FALSE(stats.ok());
 }
 
 // Files
@@ -72,7 +72,7 @@ TEST(TFSPostgresTest, DirStatFile)
       PathNode{PathNode::File, "Default", "Tableau Samples", "Superstore.twbx"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_TRUE(stats.status.ok());
+  ASSERT_TRUE(stats.ok());
   // for now we hardcode this mtime
   ASSERT_EQ(1432796488, stats.value.st_mtime);
   ASSERT_EQ(203968, stats.value.st_size);
@@ -86,5 +86,5 @@ TEST(TFSPostgresTest, DirStatInvalidFile)
                              "Bad Superstore.twbx"};
   // get some stat
   auto stats = pg->get_attributes(path);
-  ASSERT_FALSE(stats.status.ok());
+  ASSERT_FALSE(stats.ok());
 }

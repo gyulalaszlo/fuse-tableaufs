@@ -9,8 +9,8 @@
 
 #include "cpp14/make_unique.hpp"
 #include "cpp14/scope_exit.hpp"
-#include "tfs_sql_fragments.h"
 
+#include "tfs_sql_fragments.h"
 #include "tfs_postgres_config.hpp"
 
 #include "pg_connection.hpp"
@@ -21,6 +21,14 @@ using namespace tableauFS;
 namespace
 {
   class TFSPostgresImpl;
+
+  // The indices in the SQL queries
+  enum {
+    TFS_WG_QUERY_NAME = 0,
+    TFS_WG_QUERY_MTIME = 1,
+    TFS_WG_QUERY_CONTENT = 2,
+    TFS_WG_QUERY_SIZE = 3
+  };
 
   // Builds a stat node for a path and fills the default (non-db-related)
   // fields.
@@ -88,6 +96,19 @@ namespace
     return {NO_ERR, buffer};
   }
 
+  // Helper for common statting from a query.
+  template <typename Pred>
+  Result<struct stat> update_stats(struct stat node, const PGQuery& query,
+                                   Pred pred)
+  {
+    if (query.failed()) return {query.status(), node};
+    // Set the mtime
+    node.st_mtime = query.get_uint64(0, TFS_WG_QUERY_MTIME);
+    // update with the predicate
+    pred(node, query);
+    return {NO_ERR, node};
+  }
+
   class TFSPostgresImpl : public TFSPostgres
   {
     friend class TFSPostgres;
@@ -114,7 +135,7 @@ namespace
           TFS_WG_LIST_WORKBOOKS " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(twb) ") "
           "union all "
           TFS_WG_LIST_DATASOURCES " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(tds) ") ",
-          std::array<const char*, 3>{ path.site.c_str(), path.project.c_str(), path.file.c_str() }
+          std::array<const char*, 3>{{ path.site.c_str(), path.project.c_str(), path.file.c_str() }}
           );
 
       // Propagate any errors
@@ -139,14 +160,14 @@ namespace
         case PathNode::Site:
           return add_directory_entries(
               buffer, PGQuery(connection.get(), TFS_WG_LIST_PROJECTS,
-                              std::array<const char*, 1>{path.site.c_str()}));
+                              std::array<const char*, 1>{{path.site.c_str()}}));
 
         case PathNode::Project:
           return add_directory_entries(
               buffer, PGQuery(connection.get(), TFS_WG_LIST_WORKBOOKS
                               " union all " TFS_WG_LIST_DATASOURCES,
                               std::array<const char*, 2>{
-                                  path.site.c_str(), path.project.c_str()}));
+                                  {path.site.c_str(), path.project.c_str()}}));
 
         default:
           fprintf(stderr, "Unknown node level found: %u\n", path.level);
@@ -166,58 +187,39 @@ namespace
           node.st_mtime = config->get_root_mtime();
           break;
 
-        case PathNode::Site: {
-          const auto res = connection->run_query(
-              TFS_WG_LIST_SITES " and c.name = $1",
-              std::array<const char*, 1>{path.site.c_str()});
-          // clean up after ourselves
-          SCOPE_EXIT(PQclear(res.value));
+        case PathNode::Site:
 
-          // Propagate any errors
-          if (!res.status.ok()) return {res.status.err, node};
+          return update_stats(
+              node,
+              PGQuery(connection.get(), TFS_WG_LIST_SITES " and c.name = $1",
+                      std::array<const char*, 1>{{path.site.c_str()}}),
+              [](struct stat& node, const PGQuery& q) {});
 
-          // set the mtime of the node
-          node.st_mtime = atoll(PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME));
-        } break;
+        case PathNode::Project:
+          return update_stats(
+              node,
+              PGQuery(connection.get(), TFS_WG_LIST_PROJECTS " and c.name = $2",
+                      std::array<const char*, 2>{
+                          {path.site.c_str(), path.project.c_str()}}),
+              [](struct stat& node, const PGQuery& q) {});
 
-        case PathNode::Project: {
-          const auto res = connection->run_query(
-              TFS_WG_LIST_PROJECTS " and c.name = $2",
-              std::array<const char*, 2>{path.site.c_str(),
-                                         path.project.c_str()});
-          // clean up after ourselves
-          SCOPE_EXIT(PQclear(res.value));
-
-          // Propagate any errors
-          if (!res.status.ok()) return {res.status.err, node};
-
-          // set the mtime of the node
-          node.st_mtime = atoll(PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME));
-        } break;
-
-        case PathNode::File: {
-          const auto res = connection->run_query(
+        case PathNode::File:
+          return update_stats( node,
+              PGQuery(
+                connection.get(),
                 TFS_WG_LIST_WORKBOOKS " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(twb) ") "
                 "union all "
                 TFS_WG_LIST_DATASOURCES " and $3 IN (" TFS_WG_NAMES_WITHOUT_SLASH(tds) ") ",
-                std::array<const char*, 3>{ path.site.c_str(), path.project.c_str(), path.file.c_str() }
-                );
-          // clean up after ourselves
-          SCOPE_EXIT(PQclear(res.value));
+                std::array<const char*, 3>{{ path.site.c_str(), path.project.c_str(), path.file.c_str() }}
+                ),
+              [](struct stat& node, const PGQuery& query) {
+                // set the size and block count
+                const auto st_size = query.get_uint64(0, TFS_WG_QUERY_SIZE );
 
-          // Propagate any errors
-          if (!res.status.ok()) return {res.status.err, node};
-
-          // set the mtime of the node
-          node.st_mtime = atoll(PQgetvalue(res.value, 0, TFS_WG_QUERY_MTIME));
-
-          const auto st_size =
-              atoll(PQgetvalue(res.value, 0, TFS_WG_QUERY_SIZE));
-          // node->loid = (uint64_t)atoll( PQgetvalue(res, 0,
-          // TFS_WG_QUERY_CONTENT) );
-          node.st_size = st_size;
-          if (st_size > 0) node.st_blocks = (int)st_size / BlockSize + 1;
-        } break;
+                node.st_size = st_size;
+                if (st_size > 0) node.st_blocks = (int)st_size / BlockSize + 1;
+              }
+              );
 
         default:
           return {NO_ERR, node};

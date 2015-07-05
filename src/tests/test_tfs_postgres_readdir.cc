@@ -12,8 +12,8 @@ TEST(TFSPostgresTest, ReadDirFileShouldFail)
   auto dir_list = pg->read_directory(
       {PathNode::File, "Default", "Tableau Samples", "Superstore.twbx"},
       dir_cache);
-  ASSERT_FALSE(dir_list.status.ok());
-  ASSERT_EQ(dir_list.status.err, -ENOTDIR);
+  ASSERT_FALSE(dir_list.ok());
+  ASSERT_EQ(dir_list.err, -ENOTDIR);
 }
 
 TEST(TFSPostgresTest, ReadDirRoot)
@@ -22,7 +22,7 @@ TEST(TFSPostgresTest, ReadDirRoot)
 
   auto dir_cache = DirectoryList{};
   auto dir_list = pg->read_directory({PathNode::Root}, dir_cache);
-  ASSERT_TRUE(dir_list.status.ok());
+  ASSERT_TRUE(dir_list.ok());
   ASSERT_EQ(3, dir_list.value.size());
   ASSERT_EQ(".", dir_list.value[0].name);
   ASSERT_EQ("..", dir_list.value[1].name);
@@ -38,7 +38,7 @@ TEST(TFSPostgresTest, ReadDirSite)
 
   auto dir_cache = DirectoryList{};
   auto dir_list = pg->read_directory({PathNode::Site, "Default"}, dir_cache);
-  ASSERT_TRUE(dir_list.status.ok());
+  ASSERT_TRUE(dir_list.ok());
   ASSERT_EQ(4, dir_list.value.size());
   ASSERT_EQ(".", dir_list.value[0].name);
   ASSERT_EQ("..", dir_list.value[1].name);
@@ -53,8 +53,8 @@ TEST(TFSPostgresTest, ReadDirInvalidSite)
   auto dir_cache = DirectoryList{};
   auto dir_list =
       pg->read_directory({PathNode::Site, "Invalid Default"}, dir_cache);
-  ASSERT_FALSE(dir_list.status.ok());
-  ASSERT_EQ(-ENOENT, dir_list.status.err);
+  ASSERT_FALSE(dir_list.ok());
+  ASSERT_EQ(-ENOENT, dir_list.err);
   ASSERT_EQ(0, dir_list.value.size());
 }
 
@@ -69,7 +69,7 @@ TEST(TFSPostgresTest, ReadDirProject)
   auto dir_list = pg->read_directory(
       {PathNode::Project, "Default", "Tableau Samples"}, dir_cache);
 
-  ASSERT_TRUE(dir_list.status.ok());
+  ASSERT_TRUE(dir_list.ok());
   ASSERT_EQ(7, dir_list.value.size());
 
   // Dots
@@ -95,7 +95,7 @@ TEST(TFSPostgresTest, ReadDirProjectInvalid)
   auto dir_list = pg->read_directory(
       {PathNode::Project, "Default", "Invalid Tableau Samples"}, dir_cache);
 
-  ASSERT_FALSE(dir_list.status.ok());
-  ASSERT_EQ(-ENOENT, dir_list.status.err);
+  ASSERT_FALSE(dir_list.ok());
+  ASSERT_EQ(-ENOENT, dir_list.err);
   ASSERT_EQ(0, dir_list.value.size());
 }

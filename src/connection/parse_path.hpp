@@ -1,6 +1,5 @@
 #pragma once
 
-#include "result.hpp"
 #include "connection_types.hpp"
 
 namespace tableauFS

@@ -1,5 +1,6 @@
 #pragma once
 
+#if __cplusplus <= 199711L
 namespace std
 {
   /**
@@ -11,3 +12,4 @@ namespace std
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
   }
 }
+#endif

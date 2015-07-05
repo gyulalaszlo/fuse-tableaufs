@@ -2,8 +2,8 @@
 
 #include <string>
 #include <vector>
-#include "slice.hpp"
-#include "workgroup.h"
+#include "utils/slice.hpp"
+#include "utils/result.hpp"
 
 // include some default macros for EZ LIFE
 #include "cpp14/markup.hpp"

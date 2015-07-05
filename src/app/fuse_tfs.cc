@@ -10,14 +10,13 @@ extern "C" {
 #include <errno.h>
 #include <fcntl.h>
 
-#include "connection/pgconn_c.h"
 #include "tableaufs_version.h"
 }
 
 #include <memory>
-#include <map>
 #include <utility>
 #include "cpp14/make_unique.hpp"
+#include "utils/cache.hpp"
 #include "connection/parse_path.hpp"
 #include "connection/tfs_postgres_config.hpp"
 #include "connection/tfs_postgres.hpp"
@@ -35,88 +34,120 @@ namespace
     const char* pgpass;
   };
 
+  // The global instance of the service provider used by fuse
   std::shared_ptr<TFSPostgres> tfs;
 
-  template <class K, class V>
-  struct Cache {
-    Cache() : cache() {}
-    ~Cache() {}
-
-    template <class Pred>
-    V get(const K& key, Pred pred)
-    {
-      if (cache.count(key) > 0) {
-        fprintf(stderr, "------- Getting for '%s' from cache -----\n",
-                key.c_str());
-        return cache[key];
-      }
-
-      const auto res = pred();
-      fprintf(stderr, "------- Setting '%s' to cache -----\n", key.c_str());
-      cache.emplace(std::make_pair(key, res));
-      return res;
-    }
-
-    std::map<K, V> cache;
-  };
+  // STAT
+  // ----
 
   struct CachedStat {
     struct stat st;
     int result;
   };
 
-  Cache<std::string, CachedStat> stat_cache;
-  std::map<std::string, CachedStat> stat_map;
+  // The cache used for stating
+  auto stat_cache = Cache<std::string, CachedStat>("stat");
 
+  // Get the attributes
   int tableau_getattr(const char* path, struct stat* stbuf)
   {
     const auto path_str = std::string(path);
-    auto stat = stat_cache.get(path_str, [&]() {
+    auto stat = stat_cache.get(path_str, [&]() -> CachedStat {
 
+      // try to parse the path
       const auto path_node = parse_tableau_path(path);
-      if (!path_node.status.ok())
-        return CachedStat{*stbuf, path_node.status.err};
+      if (!path_node.ok()) return {*stbuf, path_node.err};
 
+      // get the stats
       auto stats = tfs->get_attributes(path_node.value);
-      if (!stats.status.ok()) return CachedStat{*stbuf, stats.status.err};
+      if (!stats.ok()) return {*stbuf, stats.err};
 
-      return CachedStat{stats.value, stats.status.err};
+      return {stats.value, stats.err};
     });
 
     memcpy(stbuf, &stat.st, sizeof(struct stat));
     return stat.result;
   }
 
+  // READDIR
+  // -------
+
+  struct CachedDirList {
+    int result;
+    DirectoryList entries;
+  };
+
+  // The cache used for stating
+  auto dir_cache = Cache<std::string, CachedDirList>("readdir");
+
+  // Readdir implementation
   int tableau_readdir(const char* path, void* buf, fuse_fill_dir_t filler,
                       off_t offset, struct fuse_file_info* fi)
   {
-    const auto path_node = parse_tableau_path(path);
-    if (!path_node.status.ok()) return path_node.status.err;
+    const auto path_str = std::string(path);
+    auto stat = dir_cache.get(path_str, [&]() -> CachedDirList {
+      // prepare the cache
+      auto dir_cache = DirectoryList{};
 
-    auto dir_cache = DirectoryList{};
-    auto dir_list = tfs->read_directory(path_node.value, dir_cache);
+      // try to parse the path
+      const auto path_node = parse_tableau_path(path);
+      if (!path_node.ok()) return {path_node.err, dir_cache};
 
-    if (!dir_list.status.ok()) {
-      fprintf(stderr, "Cannot get the list of the directory '%s' ERROR:'%i'\n",
-              path, dir_list.status.err);
-      return dir_list.status.err;
-    }
+      // read the contents
+      auto dir_list = tfs->read_directory(path_node.value, dir_cache);
 
-    for (const auto& e : dir_list.value) {
+      if (dir_list.failed()) {
+        syslog(LOG_WARNING,
+               "Cannot get the list of the directory '%s' ERROR:'%i'\n", path,
+               dir_list.err);
+      }
+
+      return {dir_list.err, dir_list.value};
+
+      //// get the stats
+      // auto stats = tfs->get_attributes(path_node.value);
+      // if (!stats.ok()) return {*stbuf, stats.err};
+
+      // return {stats.value, stats.err};
+    });
+
+    if (stat.result != 0) return stat.result;
+
+    for (const auto& e : stat.entries) {
       filler(buf, e.name.c_str(), NULL, 0);
     }
 
-    return 0;
+    return stat.result;
+
+    ///
+
+    // const auto path_node = parse_tableau_path(path);
+    // if (!path_node.ok()) return path_node.err;
+
+    // auto dir_cache = DirectoryList{};
+    // auto dir_list = tfs->read_directory(path_node.value, dir_cache);
+
+    // if (!dir_list.ok()) {
+    // fprintf(stderr, "Cannot get the list of the directory '%s' ERROR:'%i'\n",
+    // path, dir_list.err);
+    // return dir_list.err;
+    //}
+
+    // for (const auto& e : dir_list.value) {
+    // filler(buf, e.name.c_str(), NULL, 0);
+    //}
+
+    // return 0;
   }
 
   int tableau_open(const char* path, struct fuse_file_info* fi)
   {
     const auto path_node = parse_tableau_path(path);
-    if (!path_node.status.ok()) return path_node.status.err;
+    if (!path_node.ok()) return path_node.err;
 
     auto handle = tfs->open_file(path_node.value, fi->flags);
 
-    if (!handle.status.ok()) return handle.status.err;
+    if (!handle.ok()) return handle.err;
     fi->fh = handle.value;
     // during read we can return smaller buffer than
     // requested
@@ -129,7 +160,7 @@ namespace
   {
     auto res = tfs->read_file(fi->fh, monkeykingz::make_slice(buf, size), size,
                               offset);
-    if (!res.status.ok()) return res.status.err;
+    if (!res.ok()) return res.err;
     return res.value.size();
   }
 
@@ -189,6 +220,23 @@ namespace
   {
     printf("TableauFS v%s using FUSE API Version %d\n", TABLEAUFS_VERSION,
            fuse_version());
+    printf("  compiled with: %s\n", TFS_COMPILED_WITH);
+
+    printf(
+        "  features: "
+#ifdef HAVE_LO_LSEEK64
+        " lo_lseek64"
+#endif
+#ifdef HAVE_LO_TRUNCATE64
+        " lo_truncate64"
+#endif
+#ifdef TFS_ALLOW_WRITE
+        " allow_write"
+#endif
+        "\n");
+
+    printf("  file_offset_bits=%d block_size=%d\n", _FILE_OFFSET_BITS,
+           BlockSize);
   }
 
   std::shared_ptr<TFSPostgres> make_tfs_postgres(const Host host)
@@ -226,12 +274,12 @@ int main(int argc, char* argv[])
   auto dir_cache = DirectoryList{};
   auto dir_list = tfs->read_directory({PathNode::Root}, dir_cache);
 
-  if (!dir_list.status.ok()) {
+  if (!dir_list.ok()) {
     fprintf(
         stderr,
         "Cannot get the list of the root directory '%i'. Disconnecting...\n",
-        dir_list.status.err);
-    exit(dir_list.status.err);
+        dir_list.err);
+    exit(dir_list.err);
   }
 
   for (const auto& e : dir_list.value) {

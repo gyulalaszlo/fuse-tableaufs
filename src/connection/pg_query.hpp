@@ -1,8 +1,5 @@
 #pragma once
 
-#include "pg_helpers.hpp"
-
-#include "result.hpp"
 #include "pg_connection.hpp"
 
 namespace tableauFS
@@ -34,10 +31,11 @@ namespace tableauFS
     }
 
     // is the result ok
-    bool ok() const { return res.status.ok(); }
+    bool ok() const { return res.ok(); }
+    bool failed() const { return res.failed(); }
 
     // The error code of running the query
-    int status() const { return res.status.err; }
+    int status() const { return res.err; }
 
     // Get a string as the nTh column of the row_idx row
     const char* get_string(const int row_idx, const int col_idx) const

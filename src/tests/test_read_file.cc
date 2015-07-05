@@ -63,17 +63,17 @@ TEST(TFSReadFile, WholeFile)
 
   // find out the file size for the whole file read
   const auto stat = pg->get_attributes(path);
-  ASSERT_TRUE(stat.status.ok());
+  ASSERT_TRUE(stat.ok());
   const auto file_size = stat.value.st_size;
   // create  a buffer for the data
   auto buffer = std::vector<char>(file_size);
 
   auto handle = pg->open_file(path, 0);
-  ASSERT_TRUE(handle.status.ok());
+  ASSERT_TRUE(handle.ok());
 
   auto res = pg->read_file(handle.value, monkeykingz::make_slice(buffer),
                            file_size, 0);
-  ASSERT_TRUE(res.status.ok());
+  ASSERT_TRUE(res.ok());
 
   auto check_against = read_test_file(path.file);
   ASSERT_EQ(check_against.size(), file_size);
@@ -87,6 +87,6 @@ TEST(TFSReadFile, WholeFile)
 
 // auto handle = pg->open_file( {PathNode::File, "Default", "Tableau Samples",
 // "Superstore.twbx" }, 0);
-// ASSERT_TRUE( handle.status.ok() );
+// ASSERT_TRUE( handle.ok() );
 // ASSERT_NE( 0, handle.value );
 //}

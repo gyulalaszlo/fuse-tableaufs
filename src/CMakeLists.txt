@@ -24,13 +24,31 @@
 
 # FUSE_CFLAGS_OTHER may contain more then one option so we replace
 # the bad joining semicolons
-string(REPLACE ";" " " FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
+#string(REPLACE ";" " " FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
+
+if (APPLE)
+  # On OSX:
+  # FUSE_CFLAGS_OTHER=-D_FILE_OFFSET_BITS=64-D_DARWIN_USE_64_BIT_INODE
+  # so we need to split the flags by the dashes
+  string(REPLACE "-" " -" FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
+else()
+  # TODO: check on Linux
+  string(REPLACE ";" " " FUSE_CFLAGS_OTHER_SPLIT ${FUSE_CFLAGS_OTHER})
+endif()
+
+message(FUSE_CFLAGS_OTHER=${FUSE_CFLAGS_OTHER})
+message(FUSE_CFLAGS=${FUSE_CFLAGS})
 message(">> Setting FUSE_CFLAGS_OTHER to ${FUSE_CFLAGS_OTHER_SPLIT}")
+
 set( TFS_COMPILE_FLAGS  "${FUSE_CFLAGS_OTHER_SPLIT} ${POSTGRES_CFLAGS}")
 
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TFS_COMPILE_FLAGS} -Wall")
+
+message("TFS_COMPILE_FLAGS=${TFS_COMPILE_FLAGS}")
 
 add_definitions(-DTFS_TEST_SERVER="${TFS_TEST_SERVER_ADDRESS}")
 add_definitions(-DTFS_TEST_FILE_DIR="${CMAKE_SOURCE_DIR}/test-data/files/")
+add_definitions(-DTFS_COMPILED_WITH="${CMAKE_CXX_FLAGS_INIT} ${CMAKE_CXX_FLAGS}")
 
 add_library( tableaufs-pgconn
   connection/pgconn.cc
@@ -68,7 +86,7 @@ add_tfs_test( test_read_file tests/test_read_file.cc )
 
 # Add the main executable
 add_executable( fuse-tfs
-  connection/fuse_tfs.cc
+  app/fuse_tfs.cc
 
   )
 
@@ -94,8 +112,6 @@ add_executable( tableaufs
 # Set the compile flags on a pre-target basis
 set_target_properties(tableaufs PROPERTIES
   COMPILE_FLAGS ${TFS_COMPILE_FLAGS}
-  #CXX_STANDARD_REQUIRED On
-  #CXX_STANDARD 11
   )
 
 # Link it with all the good stuff

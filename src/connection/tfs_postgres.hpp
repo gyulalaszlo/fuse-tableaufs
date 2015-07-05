@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "connection_types.hpp"
-#include "result.hpp"
 
 namespace tableauFS
 {
@@ -36,10 +35,9 @@ namespace tableauFS
     // Truncate...
     virtual Result<void> truncate_file(const PathNode& path, off_t offset) = 0;
 
+    // Constructor for the default implementation
     static std::shared_ptr<TFSPostgres> make(
         std::unique_ptr<PgConnection> connection,
         std::unique_ptr<TFSPostgresConfig> config);
   };
-
-  // Constructor for the default implementation
 }

@@ -10,7 +10,7 @@ namespace
 
   Result<slice<char>> io_op_result(int ret_val, slice<char> buffer)
   {
-    fprintf(stderr, "<- IO Result: %i -- %d bytes\n", ret_val, buffer.size());
+    fprintf(stderr, "<- IO Result: %i -- %lu bytes\n", ret_val, buffer.size());
     if (ret_val < 0) {
       return {ret_val, buffer};
     }
@@ -70,7 +70,7 @@ namespace tableauFS
   {
     // try to connect and store the connection
     auto conn_result = connect_to_pg(host);
-    if (conn_result.status.ok()) {
+    if (conn_result.ok()) {
       conn = conn_result.value;
     }
   }
