@@ -49,6 +49,10 @@ message("TFS_COMPILE_FLAGS=${TFS_COMPILE_FLAGS}")
 add_definitions(-DTFS_TEST_SERVER="${TFS_TEST_SERVER_ADDRESS}")
 add_definitions(-DTFS_TEST_FILE_DIR="${CMAKE_SOURCE_DIR}/test-data/files/")
 add_definitions(-DTFS_COMPILED_WITH="${CMAKE_CXX_FLAGS_INIT} ${CMAKE_CXX_FLAGS}")
+if (CXX_HAS_CPP14)
+  add_definitions(-DHAS_CPP14=1)
+endif()
+
 
 add_library( tableaufs-pgconn
 

@@ -163,17 +163,24 @@ namespace
   }
 #endif
 
-  // A descriptor for all the possible FUSE operations on a tableau endpoint
-  struct fuse_operations tableau_oper = {
-      .getattr = tableau_getattr,
-      .readdir = tableau_readdir,
-      .open = tableau_open,
-      .read = tableau_read,
+  
+  // A C++ generator for the fuse_operations struct (since its
+  // invalid C++ code to use C initializers)
+  fuse_operations make_tableau_operations() {
+    auto op = fuse_operations{};
+    op.getattr = tableau_getattr;
+    op.readdir = tableau_readdir;
+    op.open = tableau_open;
+    op.read = tableau_read;
 #ifdef TFS_ALLOW_WRITE
-      .write = tableau_write,
-      .truncate = tableau_truncate,
+    op.write = tableau_write;
+    op.truncate = tableau_truncate;
 #endif
-  };
+    return op;
+  }
+
+  // A descriptor for all the possible FUSE operations on a tableau endpoint
+  struct fuse_operations tableau_oper = make_tableau_operations();
 
 // A shortcut macro for easy-peasy parameter description
 #define TABLEAUFS_OPT(t, p)                   \

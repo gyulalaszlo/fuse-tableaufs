@@ -1,1 +1,2 @@
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__ -DGTEST_USE_OWN_TR1_TUPLE=1")
 add_subdirectory(gtest)

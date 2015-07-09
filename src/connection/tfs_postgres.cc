@@ -34,7 +34,8 @@ namespace
   // fields.
   struct stat default_stat_for(const PathNode& path)
   {
-    struct stat node = {.st_blksize = BlockSize};
+    struct stat node = {};
+    node.st_blksize = BlockSize;
 
     // basic stat stuff: file type, nlinks, size of dirs
     if (path.level < PathNode::File) {

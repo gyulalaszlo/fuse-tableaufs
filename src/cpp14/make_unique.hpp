@@ -1,6 +1,7 @@
 #pragma once
+#include <memory>
 
-#if __cplusplus <= 199711L
+#ifndef HAS_CPP14
 namespace std
 {
   /**
