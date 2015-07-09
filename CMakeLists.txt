@@ -37,9 +37,13 @@ include(FindPkgConfig)
 find_package(Postgres 9.0 REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(ZMQPP REQUIRED)
+find_package(capnproto REQUIRED)
 
 # Load FUSE
 pkg_check_modules( FUSE REQUIRED fuse>=2.9.0)
+
+message("===> ZMQ_INCLUDE_DIRS: ${ZMQ_INCLUDE_DIRS}")
+message("===> ZMQPP_INCLUDE_DIRS: ${ZMQPP_INCLUDE_DIRS}")
 
 # Add the include directories
 include_directories(

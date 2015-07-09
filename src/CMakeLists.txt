@@ -57,6 +57,7 @@ endif()
 add_library( tableaufs-pgconn
 
   utils/logger.cc
+  utils/debug_utilities.cc
 
   connection/pgconn.cc
   connection/pg_helpers.cc
@@ -67,12 +68,16 @@ add_library( tableaufs-pgconn
   connection/tfs_postgres_config.cc
   connection/tfs_postgres.cc
 
+  capnp/tfs.capnp.c++
+  connection/tfs_capnp.cc
+
   )
 
 target_link_libraries( tableaufs-pgconn
   ${POSTGRES_LIBRARY}
   ${ZMQ_LIBRARY}
   ${ZMQPP_LIBRARY}
+  ${CAPNPROTO_LIBRARIES}
   stdc++
   )
 
@@ -90,6 +95,8 @@ add_tfs_test( test_stat tests//test_tfs_postgres_stat.cc )
 add_tfs_test( test_parse_path tests/test_parse_path.cc )
 add_tfs_test( test_open_file tests/test_open_file.cc )
 add_tfs_test( test_read_file tests/test_read_file.cc )
+
+add_tfs_test( test_capnp tests/test_capnp.cc )
 
 # Add the main executable
 add_executable( fuse-tfs

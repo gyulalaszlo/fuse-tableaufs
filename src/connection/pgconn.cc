@@ -7,11 +7,14 @@
 #include "tfs_postgres.hpp"
 #include "cpp14/make_unique.hpp"
 
-using std::cerr;
-using std::cout;
+#if 0
+using namespace tableauFS;
 
 namespace
 {
+  using std::cerr;
+  using std::cout;
+  using tableauFS::PathNode;
 
   enum MessageType {
     Die,
@@ -35,22 +38,27 @@ namespace
     return s;
   }
 
+  using GeneratorFunc = std::function<std::shared_ptr<TFSPostgres>()>;
+
+
   class TFSToZMQForward : public TFSPostgres {
 
     public:
-    TFSToZMQForward( zmqpp::context& ctx, std::function<std::shared_ptr<TFSPostgres>()> generator )
+    TFSToZMQForward( zmqpp::context& ctx, GeneratorFunc generator )
       : ctx(ctx)
       //, wrapped( generator() )
-      , actor( make_actor(generator()))
+      , actor( make_actor(generator))
     {
     }
 
-    ~TFSPostgres {}
+    ~TFSToZMQForward() {
+      
+    }
 
     private:
 
-    zmqpp::actor make_actor( std::function<std::shared_ptr<TFSPostgres>()> generator) {
-      auto lambda = [](zmqpp::socket * pipe)
+    zmqpp::actor make_actor( const GeneratorFunc& generator) {
+      auto lambda = [&](zmqpp::socket * pipe)
       {
         auto worker = generator();
         pipe->send(zmqpp::signal::ok); // signal we successfully started
@@ -66,7 +74,7 @@ namespace
             return true; // will send signal::ok to signal successful shutdown
 
           if (type == MessageType::ReadDirectory) {
-            auto path = PathNode{Invalid};
+            auto path = PathNode{PathNode::Invalid};
             msg >> path;
           }
 
@@ -109,7 +117,7 @@ namespace
     // Truncate...
     virtual Result<void> truncate_file(const PathNode& path, off_t offset) {}
 
-    zmqpp::context ctx;
+    zmqpp::context& ctx;
     zmqpp::actor actor;
   };
 }
@@ -155,3 +163,4 @@ namespace tableauFS
 }
 
 using namespace tableauFS::connection;
+#endif
