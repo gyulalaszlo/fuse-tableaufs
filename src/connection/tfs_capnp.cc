@@ -60,8 +60,33 @@ namespace tableauFS {
     path.site = pathNode.getSite();
     path.project = pathNode.getProject();
     path.file = pathNode.getFile();
+  }
 
+  void encode_read_dir_resp( kj::OutputStream& out, const DirectoryList& path  )
+  {
+    ::capnp::MallocMessageBuilder message;
 
+    auto root = message.initRoot<proto::ReaddirResp>();
+    auto dirs = root.initEntries(path.size());
+
+    for (int s=path.size(), i=0; i < s; ++i) {
+      dirs.set(i, path[i].name);
+    }
+
+    writePackedMessage(out, message);
+  }
+
+  void decode_read_dir_resp( kj::BufferedInputStream& in, DirectoryList& paths )
+  {
+    ::capnp::PackedMessageReader message(in);
+
+    auto root = message.getRoot<proto::ReaddirResp>();
+
+    paths.reserve( root.getEntries().size() );
+
+    for (const auto& e : root.getEntries()) {
+      paths.emplace_back( DirectoryEntry{e} );
+    }
   }
 
 }
