@@ -34,7 +34,7 @@
 #include <iostream>
 
 namespace kj {
-namespace std {
+namespace stdwrap {
 
 class StdOutputStream: public kj::OutputStream {
 

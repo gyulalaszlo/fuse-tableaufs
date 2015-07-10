@@ -14,22 +14,6 @@
 namespace tableauFS {
 namespace proto {
 
-struct PathNode {
-  PathNode() = delete;
-
-  class Reader;
-  class Builder;
-  class Pipeline;
-  enum class Level: uint16_t {
-    ROOT,
-    SITE,
-    PROJECT,
-    FILE,
-    INVALID,
-  };
-
-};
-
 struct ReaddirReq {
   ReaddirReq() = delete;
 
@@ -70,8 +54,6 @@ struct GetAttributesResp {
 namespace capnp {
 namespace schemas {
 
-extern const ::capnp::_::RawSchema s_a32b53d50b31b095;
-extern const ::capnp::_::RawSchema s_dee79801937a3817;
 extern const ::capnp::_::RawSchema s_b9f7265c923a761f;
 extern const ::capnp::_::RawSchema s_c71c95286510ad5f;
 extern const ::capnp::_::RawSchema s_cb49fd0283e73abb;
@@ -80,11 +62,6 @@ extern const ::capnp::_::RawSchema s_dc3e07e9f74d4e69;
 }  // namespace schemas
 namespace _ {  // private
 
-CAPNP_DECLARE_STRUCT(
-    ::tableauFS::proto::PathNode, a32b53d50b31b095,
-    1, 3, INLINE_COMPOSITE);
-CAPNP_DECLARE_ENUM(
-    ::tableauFS::proto::PathNode::Level, dee79801937a3817);
 CAPNP_DECLARE_STRUCT(
     ::tableauFS::proto::ReaddirReq, b9f7265c923a761f,
     0, 1, POINTER);
@@ -96,7 +73,7 @@ CAPNP_DECLARE_STRUCT(
     0, 1, POINTER);
 CAPNP_DECLARE_STRUCT(
     ::tableauFS::proto::GetAttributesResp, dc3e07e9f74d4e69,
-    5, 0, INLINE_COMPOSITE);
+    7, 0, INLINE_COMPOSITE);
 
 }  // namespace _ (private)
 }  // namespace capnp
@@ -105,108 +82,6 @@ CAPNP_DECLARE_STRUCT(
 
 namespace tableauFS {
 namespace proto {
-
-class PathNode::Reader {
-public:
-  typedef PathNode Reads;
-
-  Reader() = default;
-  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
-
-  inline ::capnp::MessageSize totalSize() const {
-    return _reader.totalSize().asPublic();
-  }
-
-  inline  ::tableauFS::proto::PathNode::Level getLevel() const;
-
-  inline bool hasSite() const;
-  inline  ::capnp::Text::Reader getSite() const;
-
-  inline bool hasProject() const;
-  inline  ::capnp::Text::Reader getProject() const;
-
-  inline bool hasFile() const;
-  inline  ::capnp::Text::Reader getFile() const;
-
-private:
-  ::capnp::_::StructReader _reader;
-  template <typename T, ::capnp::Kind k>
-  friend struct ::capnp::ToDynamic_;
-  template <typename T, ::capnp::Kind k>
-  friend struct ::capnp::_::PointerHelpers;
-  template <typename T, ::capnp::Kind k>
-  friend struct ::capnp::List;
-  friend class ::capnp::MessageBuilder;
-  friend class ::capnp::Orphanage;
-  friend ::kj::StringTree KJ_STRINGIFY(PathNode::Reader reader);
-};
-
-inline ::kj::StringTree KJ_STRINGIFY(PathNode::Reader reader) {
-  return ::capnp::_::structString<PathNode>(reader._reader);
-}
-
-class PathNode::Builder {
-public:
-  typedef PathNode Builds;
-
-  Builder() = delete;  // Deleted to discourage incorrect usage.
-                       // You can explicitly initialize to nullptr instead.
-  inline Builder(decltype(nullptr)) {}
-  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
-  inline operator Reader() const { return Reader(_builder.asReader()); }
-  inline Reader asReader() const { return *this; }
-
-  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
-
-  inline  ::tableauFS::proto::PathNode::Level getLevel();
-  inline void setLevel( ::tableauFS::proto::PathNode::Level value);
-
-  inline bool hasSite();
-  inline  ::capnp::Text::Builder getSite();
-  inline void setSite( ::capnp::Text::Reader value);
-  inline  ::capnp::Text::Builder initSite(unsigned int size);
-  inline void adoptSite(::capnp::Orphan< ::capnp::Text>&& value);
-  inline ::capnp::Orphan< ::capnp::Text> disownSite();
-
-  inline bool hasProject();
-  inline  ::capnp::Text::Builder getProject();
-  inline void setProject( ::capnp::Text::Reader value);
-  inline  ::capnp::Text::Builder initProject(unsigned int size);
-  inline void adoptProject(::capnp::Orphan< ::capnp::Text>&& value);
-  inline ::capnp::Orphan< ::capnp::Text> disownProject();
-
-  inline bool hasFile();
-  inline  ::capnp::Text::Builder getFile();
-  inline void setFile( ::capnp::Text::Reader value);
-  inline  ::capnp::Text::Builder initFile(unsigned int size);
-  inline void adoptFile(::capnp::Orphan< ::capnp::Text>&& value);
-  inline ::capnp::Orphan< ::capnp::Text> disownFile();
-
-private:
-  ::capnp::_::StructBuilder _builder;
-  template <typename T, ::capnp::Kind k>
-  friend struct ::capnp::ToDynamic_;
-  friend class ::capnp::Orphanage;
-  friend ::kj::StringTree KJ_STRINGIFY(PathNode::Builder builder);
-};
-
-inline ::kj::StringTree KJ_STRINGIFY(PathNode::Builder builder) {
-  return ::capnp::_::structString<PathNode>(builder._builder.asReader());
-}
-
-class PathNode::Pipeline {
-public:
-  typedef PathNode Pipelines;
-
-  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
-  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
-      : _typeless(kj::mv(typeless)) {}
-
-private:
-  ::capnp::AnyPointer::Pipeline _typeless;
-  template <typename T, ::capnp::Kind k>
-  friend struct ::capnp::ToDynamic_;
-};
 
 class ReaddirReq::Reader {
 public:
@@ -220,7 +95,7 @@ public:
   }
 
   inline bool hasPath() const;
-  inline  ::tableauFS::proto::PathNode::Reader getPath() const;
+  inline  ::capnp::Text::Reader getPath() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -253,11 +128,11 @@ public:
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
 
   inline bool hasPath();
-  inline  ::tableauFS::proto::PathNode::Builder getPath();
-  inline void setPath( ::tableauFS::proto::PathNode::Reader value);
-  inline  ::tableauFS::proto::PathNode::Builder initPath();
-  inline void adoptPath(::capnp::Orphan< ::tableauFS::proto::PathNode>&& value);
-  inline ::capnp::Orphan< ::tableauFS::proto::PathNode> disownPath();
+  inline  ::capnp::Text::Builder getPath();
+  inline void setPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initPath(unsigned int size);
+  inline void adoptPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownPath();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -279,7 +154,6 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::tableauFS::proto::PathNode::Pipeline getPath();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   template <typename T, ::capnp::Kind k>
@@ -381,7 +255,7 @@ public:
   }
 
   inline bool hasPath() const;
-  inline  ::tableauFS::proto::PathNode::Reader getPath() const;
+  inline  ::capnp::Text::Reader getPath() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -414,11 +288,11 @@ public:
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
 
   inline bool hasPath();
-  inline  ::tableauFS::proto::PathNode::Builder getPath();
-  inline void setPath( ::tableauFS::proto::PathNode::Reader value);
-  inline  ::tableauFS::proto::PathNode::Builder initPath();
-  inline void adoptPath(::capnp::Orphan< ::tableauFS::proto::PathNode>&& value);
-  inline ::capnp::Orphan< ::tableauFS::proto::PathNode> disownPath();
+  inline  ::capnp::Text::Builder getPath();
+  inline void setPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initPath(unsigned int size);
+  inline void adoptPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownPath();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -440,7 +314,6 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::tableauFS::proto::PathNode::Pipeline getPath();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   template <typename T, ::capnp::Kind k>
@@ -458,6 +331,8 @@ public:
     return _reader.totalSize().asPublic();
   }
 
+  inline  ::int64_t getErr() const;
+
   inline  ::uint64_t getMtime() const;
 
   inline  ::int64_t getMode() const;
@@ -467,6 +342,8 @@ public:
   inline  ::uint64_t getSize() const;
 
   inline  ::uint64_t getBlocks() const;
+
+  inline  ::uint64_t getBlksize() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -498,6 +375,9 @@ public:
 
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
 
+  inline  ::int64_t getErr();
+  inline void setErr( ::int64_t value);
+
   inline  ::uint64_t getMtime();
   inline void setMtime( ::uint64_t value);
 
@@ -512,6 +392,9 @@ public:
 
   inline  ::uint64_t getBlocks();
   inline void setBlocks( ::uint64_t value);
+
+  inline  ::uint64_t getBlksize();
+  inline void setBlksize( ::uint64_t value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -541,148 +424,35 @@ private:
 
 // =======================================================================================
 
-inline  ::tableauFS::proto::PathNode::Level PathNode::Reader::getLevel() const {
-  return _reader.getDataField< ::tableauFS::proto::PathNode::Level>(
-      0 * ::capnp::ELEMENTS);
-}
-
-inline  ::tableauFS::proto::PathNode::Level PathNode::Builder::getLevel() {
-  return _builder.getDataField< ::tableauFS::proto::PathNode::Level>(
-      0 * ::capnp::ELEMENTS);
-}
-inline void PathNode::Builder::setLevel( ::tableauFS::proto::PathNode::Level value) {
-  _builder.setDataField< ::tableauFS::proto::PathNode::Level>(
-      0 * ::capnp::ELEMENTS, value);
-}
-
-inline bool PathNode::Reader::hasSite() const {
-  return !_reader.getPointerField(0 * ::capnp::POINTERS).isNull();
-}
-inline bool PathNode::Builder::hasSite() {
-  return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
-}
-inline  ::capnp::Text::Reader PathNode::Reader::getSite() const {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _reader.getPointerField(0 * ::capnp::POINTERS));
-}
-inline  ::capnp::Text::Builder PathNode::Builder::getSite() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
-}
-inline void PathNode::Builder::setSite( ::capnp::Text::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
-      _builder.getPointerField(0 * ::capnp::POINTERS), value);
-}
-inline  ::capnp::Text::Builder PathNode::Builder::initSite(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
-      _builder.getPointerField(0 * ::capnp::POINTERS), size);
-}
-inline void PathNode::Builder::adoptSite(
-    ::capnp::Orphan< ::capnp::Text>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
-      _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
-}
-inline ::capnp::Orphan< ::capnp::Text> PathNode::Builder::disownSite() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
-}
-
-inline bool PathNode::Reader::hasProject() const {
-  return !_reader.getPointerField(1 * ::capnp::POINTERS).isNull();
-}
-inline bool PathNode::Builder::hasProject() {
-  return !_builder.getPointerField(1 * ::capnp::POINTERS).isNull();
-}
-inline  ::capnp::Text::Reader PathNode::Reader::getProject() const {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _reader.getPointerField(1 * ::capnp::POINTERS));
-}
-inline  ::capnp::Text::Builder PathNode::Builder::getProject() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _builder.getPointerField(1 * ::capnp::POINTERS));
-}
-inline void PathNode::Builder::setProject( ::capnp::Text::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
-      _builder.getPointerField(1 * ::capnp::POINTERS), value);
-}
-inline  ::capnp::Text::Builder PathNode::Builder::initProject(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
-      _builder.getPointerField(1 * ::capnp::POINTERS), size);
-}
-inline void PathNode::Builder::adoptProject(
-    ::capnp::Orphan< ::capnp::Text>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
-      _builder.getPointerField(1 * ::capnp::POINTERS), kj::mv(value));
-}
-inline ::capnp::Orphan< ::capnp::Text> PathNode::Builder::disownProject() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
-      _builder.getPointerField(1 * ::capnp::POINTERS));
-}
-
-inline bool PathNode::Reader::hasFile() const {
-  return !_reader.getPointerField(2 * ::capnp::POINTERS).isNull();
-}
-inline bool PathNode::Builder::hasFile() {
-  return !_builder.getPointerField(2 * ::capnp::POINTERS).isNull();
-}
-inline  ::capnp::Text::Reader PathNode::Reader::getFile() const {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _reader.getPointerField(2 * ::capnp::POINTERS));
-}
-inline  ::capnp::Text::Builder PathNode::Builder::getFile() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
-      _builder.getPointerField(2 * ::capnp::POINTERS));
-}
-inline void PathNode::Builder::setFile( ::capnp::Text::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
-      _builder.getPointerField(2 * ::capnp::POINTERS), value);
-}
-inline  ::capnp::Text::Builder PathNode::Builder::initFile(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
-      _builder.getPointerField(2 * ::capnp::POINTERS), size);
-}
-inline void PathNode::Builder::adoptFile(
-    ::capnp::Orphan< ::capnp::Text>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
-      _builder.getPointerField(2 * ::capnp::POINTERS), kj::mv(value));
-}
-inline ::capnp::Orphan< ::capnp::Text> PathNode::Builder::disownFile() {
-  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
-      _builder.getPointerField(2 * ::capnp::POINTERS));
-}
-
 inline bool ReaddirReq::Reader::hasPath() const {
   return !_reader.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
 inline bool ReaddirReq::Builder::hasPath() {
   return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
-inline  ::tableauFS::proto::PathNode::Reader ReaddirReq::Reader::getPath() const {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::get(
+inline  ::capnp::Text::Reader ReaddirReq::Reader::getPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
       _reader.getPointerField(0 * ::capnp::POINTERS));
 }
-inline  ::tableauFS::proto::PathNode::Builder ReaddirReq::Builder::getPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::get(
+inline  ::capnp::Text::Builder ReaddirReq::Builder::getPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
       _builder.getPointerField(0 * ::capnp::POINTERS));
 }
-inline  ::tableauFS::proto::PathNode::Pipeline ReaddirReq::Pipeline::getPath() {
-  return  ::tableauFS::proto::PathNode::Pipeline(_typeless.getPointerField(0));
-}
-inline void ReaddirReq::Builder::setPath( ::tableauFS::proto::PathNode::Reader value) {
-  ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::set(
+inline void ReaddirReq::Builder::setPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
       _builder.getPointerField(0 * ::capnp::POINTERS), value);
 }
-inline  ::tableauFS::proto::PathNode::Builder ReaddirReq::Builder::initPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::init(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
+inline  ::capnp::Text::Builder ReaddirReq::Builder::initPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
+      _builder.getPointerField(0 * ::capnp::POINTERS), size);
 }
 inline void ReaddirReq::Builder::adoptPath(
-    ::capnp::Orphan< ::tableauFS::proto::PathNode>&& value) {
-  ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::adopt(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
       _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::tableauFS::proto::PathNode> ReaddirReq::Builder::disownPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::disown(
+inline ::capnp::Orphan< ::capnp::Text> ReaddirReq::Builder::disownPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
       _builder.getPointerField(0 * ::capnp::POINTERS));
 }
 
@@ -742,103 +512,128 @@ inline bool GetAttributesReq::Reader::hasPath() const {
 inline bool GetAttributesReq::Builder::hasPath() {
   return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
-inline  ::tableauFS::proto::PathNode::Reader GetAttributesReq::Reader::getPath() const {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::get(
+inline  ::capnp::Text::Reader GetAttributesReq::Reader::getPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
       _reader.getPointerField(0 * ::capnp::POINTERS));
 }
-inline  ::tableauFS::proto::PathNode::Builder GetAttributesReq::Builder::getPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::get(
+inline  ::capnp::Text::Builder GetAttributesReq::Builder::getPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
       _builder.getPointerField(0 * ::capnp::POINTERS));
 }
-inline  ::tableauFS::proto::PathNode::Pipeline GetAttributesReq::Pipeline::getPath() {
-  return  ::tableauFS::proto::PathNode::Pipeline(_typeless.getPointerField(0));
-}
-inline void GetAttributesReq::Builder::setPath( ::tableauFS::proto::PathNode::Reader value) {
-  ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::set(
+inline void GetAttributesReq::Builder::setPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
       _builder.getPointerField(0 * ::capnp::POINTERS), value);
 }
-inline  ::tableauFS::proto::PathNode::Builder GetAttributesReq::Builder::initPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::init(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
+inline  ::capnp::Text::Builder GetAttributesReq::Builder::initPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
+      _builder.getPointerField(0 * ::capnp::POINTERS), size);
 }
 inline void GetAttributesReq::Builder::adoptPath(
-    ::capnp::Orphan< ::tableauFS::proto::PathNode>&& value) {
-  ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::adopt(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
       _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::tableauFS::proto::PathNode> GetAttributesReq::Builder::disownPath() {
-  return ::capnp::_::PointerHelpers< ::tableauFS::proto::PathNode>::disown(
+inline ::capnp::Orphan< ::capnp::Text> GetAttributesReq::Builder::disownPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
       _builder.getPointerField(0 * ::capnp::POINTERS));
+}
+
+inline  ::int64_t GetAttributesResp::Reader::getErr() const {
+  return _reader.getDataField< ::int64_t>(
+      0 * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t GetAttributesResp::Builder::getErr() {
+  return _builder.getDataField< ::int64_t>(
+      0 * ::capnp::ELEMENTS);
+}
+inline void GetAttributesResp::Builder::setErr( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      0 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint64_t GetAttributesResp::Reader::getMtime() const {
   return _reader.getDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS);
+      1 * ::capnp::ELEMENTS);
 }
 
 inline  ::uint64_t GetAttributesResp::Builder::getMtime() {
   return _builder.getDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS);
+      1 * ::capnp::ELEMENTS);
 }
 inline void GetAttributesResp::Builder::setMtime( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS, value);
+      1 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::int64_t GetAttributesResp::Reader::getMode() const {
   return _reader.getDataField< ::int64_t>(
-      1 * ::capnp::ELEMENTS);
+      2 * ::capnp::ELEMENTS);
 }
 
 inline  ::int64_t GetAttributesResp::Builder::getMode() {
   return _builder.getDataField< ::int64_t>(
-      1 * ::capnp::ELEMENTS);
+      2 * ::capnp::ELEMENTS);
 }
 inline void GetAttributesResp::Builder::setMode( ::int64_t value) {
   _builder.setDataField< ::int64_t>(
-      1 * ::capnp::ELEMENTS, value);
+      2 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint64_t GetAttributesResp::Reader::getNlink() const {
   return _reader.getDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS);
+      3 * ::capnp::ELEMENTS);
 }
 
 inline  ::uint64_t GetAttributesResp::Builder::getNlink() {
   return _builder.getDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS);
+      3 * ::capnp::ELEMENTS);
 }
 inline void GetAttributesResp::Builder::setNlink( ::uint64_t value) {
-  _builder.setDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS, value);
-}
-
-inline  ::uint64_t GetAttributesResp::Reader::getSize() const {
-  return _reader.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
-}
-
-inline  ::uint64_t GetAttributesResp::Builder::getSize() {
-  return _builder.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
-}
-inline void GetAttributesResp::Builder::setSize( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
       3 * ::capnp::ELEMENTS, value);
 }
 
-inline  ::uint64_t GetAttributesResp::Reader::getBlocks() const {
+inline  ::uint64_t GetAttributesResp::Reader::getSize() const {
   return _reader.getDataField< ::uint64_t>(
       4 * ::capnp::ELEMENTS);
 }
 
-inline  ::uint64_t GetAttributesResp::Builder::getBlocks() {
+inline  ::uint64_t GetAttributesResp::Builder::getSize() {
   return _builder.getDataField< ::uint64_t>(
       4 * ::capnp::ELEMENTS);
 }
-inline void GetAttributesResp::Builder::setBlocks( ::uint64_t value) {
+inline void GetAttributesResp::Builder::setSize( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
       4 * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint64_t GetAttributesResp::Reader::getBlocks() const {
+  return _reader.getDataField< ::uint64_t>(
+      5 * ::capnp::ELEMENTS);
+}
+
+inline  ::uint64_t GetAttributesResp::Builder::getBlocks() {
+  return _builder.getDataField< ::uint64_t>(
+      5 * ::capnp::ELEMENTS);
+}
+inline void GetAttributesResp::Builder::setBlocks( ::uint64_t value) {
+  _builder.setDataField< ::uint64_t>(
+      5 * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint64_t GetAttributesResp::Reader::getBlksize() const {
+  return _reader.getDataField< ::uint64_t>(
+      6 * ::capnp::ELEMENTS);
+}
+
+inline  ::uint64_t GetAttributesResp::Builder::getBlksize() {
+  return _builder.getDataField< ::uint64_t>(
+      6 * ::capnp::ELEMENTS);
+}
+inline void GetAttributesResp::Builder::setBlksize( ::uint64_t value) {
+  _builder.setDataField< ::uint64_t>(
+      6 * ::capnp::ELEMENTS, value);
 }
 
 }  // namespace

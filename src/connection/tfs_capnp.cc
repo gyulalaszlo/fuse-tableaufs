@@ -5,64 +5,37 @@
 
 using namespace tableauFS;
 namespace {
-  // Helper to convert the enum value properly
-  proto::PathNode::Level level_encode(PathNode::Level level) {
-    using Lv = proto::PathNode::Level;
-    using Pn = PathNode::Level;
-    switch (level)
-    {
-      case Pn::Root: return Lv::ROOT;
-      case Pn::Site: return Lv::SITE;
-      case Pn::Project: return Lv::PROJECT;
-      case Pn::File: return Lv::FILE;
-      default: return Lv::INVALID;
-    }
-  }
 
-  PathNode::Level level_decode(proto::PathNode::Level level) {
-    using Lv = proto::PathNode::Level;
-    using Pn = PathNode::Level;
-    switch (level)
-    {
-      case Lv::ROOT: return Pn::Root;
-      case Lv::SITE: return Pn::Site;
-      case Lv::PROJECT: return Pn::Project;
-      case Lv::FILE: return Pn::File;
-
-      default: return Pn::Invalid;
-    }
-  }
-}
-
-namespace tableauFS {
-
-  void encode_read_dir_req( kj::OutputStream& out, const PathNode& path  ) {
+  template <typename MessageT>
+  void encode_path( kj::OutputStream& out, const std::string& path  ) {
     ::capnp::MallocMessageBuilder message;
 
-    auto root = message.initRoot<proto::ReaddirReq>();
-    auto path_node = root.initPath();
-    path_node.setLevel( level_encode( path.level) );
-    path_node.setSite( path.site );
-    path_node.setProject( path.project );
-    path_node.setFile( path.file );
-
+    auto root = message.initRoot<MessageT>();
+    root.setPath( path );
 
     writePackedMessage(out, message);
   }
 
-  void decode_read_dir_req( kj::BufferedInputStream& in, PathNode& path )
+  template <typename MessageT>
+  ErrorCode decode_path( kj::BufferedInputStream& in, std::string& out )
   {
     ::capnp::PackedMessageReader message(in);
+    auto root = message.getRoot<MessageT>();
+    out = root.getPath();
 
-    auto root = message.getRoot<proto::ReaddirReq>();
-    auto pathNode = root.getPath();
-    path.level = level_decode( pathNode.getLevel() );
-    path.site = pathNode.getSite();
-    path.project = pathNode.getProject();
-    path.file = pathNode.getFile();
+    return root.getErr();
   }
 
-  void encode_read_dir_resp( kj::OutputStream& out, const DirectoryList& path  )
+
+}
+
+namespace tableauFS {
+
+  CAPNP_ENCODE_FN( read_dir_req, const std::string& path ) { encode_path<proto::ReaddirReq>(out, path); }
+  CAPNP_DECODE_FN( read_dir_req, std::string& path ) { return decode_path<proto::ReaddirReq>( in, path ); }
+
+
+  CAPNP_ENCODE_FN( read_dir_resp, const DirectoryList& path )
   {
     ::capnp::MallocMessageBuilder message;
 
@@ -76,7 +49,8 @@ namespace tableauFS {
     writePackedMessage(out, message);
   }
 
-  void decode_read_dir_resp( kj::BufferedInputStream& in, DirectoryList& paths )
+
+  CAPNP_DECODE_FN( read_dir_resp, DirectoryList& paths )
   {
     ::capnp::PackedMessageReader message(in);
 
@@ -87,6 +61,47 @@ namespace tableauFS {
     for (const auto& e : root.getEntries()) {
       paths.emplace_back( DirectoryEntry{e} );
     }
+
+    return root.getErr();
+  }
+
+
+  // GetAttributes
+
+  CAPNP_ENCODE_FN( get_attributes_req, const std::string& path ) { encode_path<proto::GetAttributesReq>(out, path); }
+  CAPNP_DECODE_FN( get_attributes_req, std::string& path ) { return decode_path<proto::GetAttributesReq>( in, path ); }
+
+
+  CAPNP_ENCODE_FN( get_attributes_resp, const struct stat& st ) {
+    ::capnp::MallocMessageBuilder message;
+
+    auto root = message.initRoot<proto::GetAttributesResp>();
+
+    root.setMtime( st.st_mtime );
+    root.setMode( st.st_mode );
+    root.setNlink( st.st_nlink );
+    root.setSize( st.st_size );
+    root.setBlocks( st.st_blocks );
+    root.setBlksize( st.st_blksize );
+
+
+    writePackedMessage(out, message);
+  }
+
+
+  CAPNP_DECODE_FN( get_attributes_resp, struct stat& st ) {
+    ::capnp::PackedMessageReader message(in);
+
+    auto root = message.getRoot<proto::GetAttributesResp>();
+
+    st.st_mtime = root.getMtime();
+    st.st_mode = root.getMode();
+    st.st_nlink = root.getNlink();
+    st.st_size   = root.getSize();
+    st.st_blocks = root.getBlocks();
+    st.st_blksize = root.getBlksize();
+
+    return root.getErr();
   }
 
 }

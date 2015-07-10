@@ -2,26 +2,27 @@
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("tableauFS::proto");
 
-struct PathNode {
-  level @0 :Level;
-  site @1 :Text;
-  project @2 :Text;
-  file @3 :Text;
-
-  enum Level {
-    root @0;
-    site @1;
-    project @2;
-    file @3;
-    invalid @4;
-  }
-}
+# struct PathNode {
+#   level @0 :Level;
+#   site @1 :Text;
+#   project @2 :Text;
+#   file @3 :Text;
+#
+#   enum Level {
+#     root @0;
+#     site @1;
+#     project @2;
+#     file @3;
+#     invalid @4;
+#   }
+# }
 
 # Readdir
 # -------
 
 struct ReaddirReq {
-  path @0 :PathNode;
+  path @0 :Text;
+#  path @0 :PathNode;
 }
 
 struct ReaddirResp {
@@ -33,13 +34,22 @@ struct ReaddirResp {
 # ----------------------
 
 struct GetAttributesReq {
-  path @0 :PathNode;
+  path @0 :Text;
 }
 
 struct GetAttributesResp {
-  mtime @0 :UInt64;
-  mode @1 :Int64; # S_IFDIR | 0555;  # read only
-  nlink @2 :UInt64; #= 2;
-  size @3 :UInt64; #= BlockSize;
-  blocks @4 :UInt64;
+  err @0 :Int64;
+
+  mtime @1 :UInt64;
+  mode @2 :Int64; # S_IFDIR | 0555;  # read only
+  nlink @3 :UInt64; #= 2;
+  size @4 :UInt64; #= BlockSize;
+  blocks @5 :UInt64;
+  blksize @6 :UInt64;
 }
+
+
+# Opening and reading a file
+# --------------------------
+
+
