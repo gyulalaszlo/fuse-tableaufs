@@ -71,6 +71,9 @@ add_library( tableaufs-pgconn
   capnp/tfs.capnp.c++
   connection/tfs_capnp.cc
 
+
+  workers/worker_readdir.cc
+
   )
 
 target_link_libraries( tableaufs-pgconn
@@ -97,6 +100,8 @@ add_tfs_test( test_open_file tests/test_open_file.cc )
 add_tfs_test( test_read_file tests/test_read_file.cc )
 
 add_tfs_test( test_capnp tests/test_capnp.cc )
+
+add_tfs_test( test_worker_readdir tests/test_worker_readdir.cc )
 
 # Add the main executable
 add_executable( fuse-tfs

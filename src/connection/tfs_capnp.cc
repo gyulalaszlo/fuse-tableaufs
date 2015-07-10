@@ -17,13 +17,12 @@ namespace {
   }
 
   template <typename MessageT>
-  ErrorCode decode_path( kj::BufferedInputStream& in, std::string& out )
+  void decode_path( kj::BufferedInputStream& in, std::string& out )
   {
     ::capnp::PackedMessageReader message(in);
     auto root = message.getRoot<MessageT>();
     out = root.getPath();
 
-    return root.getErr();
   }
 
 
@@ -32,10 +31,10 @@ namespace {
 namespace tableauFS {
 
   CAPNP_ENCODE_FN( read_dir_req, const std::string& path ) { encode_path<proto::ReaddirReq>(out, path); }
-  CAPNP_DECODE_FN( read_dir_req, std::string& path ) { return decode_path<proto::ReaddirReq>( in, path ); }
+  CAPNP_DECODE_FN( read_dir_req, std::string& path ) {  decode_path<proto::ReaddirReq>( in, path ); }
 
 
-  CAPNP_ENCODE_FN( read_dir_resp, const DirectoryList& path )
+  CAPNP_ENCODE_RESP( read_dir_resp, const DirectoryList& path )
   {
     ::capnp::MallocMessageBuilder message;
 
@@ -50,7 +49,7 @@ namespace tableauFS {
   }
 
 
-  CAPNP_DECODE_FN( read_dir_resp, DirectoryList& paths )
+  CAPNP_DECODE_RESP( read_dir_resp, DirectoryList& paths )
   {
     ::capnp::PackedMessageReader message(in);
 
@@ -69,10 +68,10 @@ namespace tableauFS {
   // GetAttributes
 
   CAPNP_ENCODE_FN( get_attributes_req, const std::string& path ) { encode_path<proto::GetAttributesReq>(out, path); }
-  CAPNP_DECODE_FN( get_attributes_req, std::string& path ) { return decode_path<proto::GetAttributesReq>( in, path ); }
+  CAPNP_DECODE_FN( get_attributes_req, std::string& path ) {  decode_path<proto::GetAttributesReq>( in, path ); }
 
 
-  CAPNP_ENCODE_FN( get_attributes_resp, const struct stat& st ) {
+  CAPNP_ENCODE_RESP( get_attributes_resp, const struct stat& st ) {
     ::capnp::MallocMessageBuilder message;
 
     auto root = message.initRoot<proto::GetAttributesResp>();
@@ -89,7 +88,7 @@ namespace tableauFS {
   }
 
 
-  CAPNP_DECODE_FN( get_attributes_resp, struct stat& st ) {
+  CAPNP_DECODE_RESP( get_attributes_resp, struct stat& st ) {
     ::capnp::PackedMessageReader message(in);
 
     auto root = message.getRoot<proto::GetAttributesResp>();
