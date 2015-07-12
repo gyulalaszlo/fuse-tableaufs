@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pg_helpers.hpp"
 #include "pg_connection.hpp"
 
 namespace tableauFS

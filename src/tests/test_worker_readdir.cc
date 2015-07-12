@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <map>
+#include <array>
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
@@ -11,12 +14,33 @@
 
 #include "connection/tfs_capnp.hpp"
 
+
+
+
+#include "connection/tfs_sql_fragments.h"
+#include "connection/tfs_postgres_config.hpp"
+
+#include "connection/parse_path.hpp"
+#include "connection/pg_connection.hpp"
+#include "connection/pg_query.hpp"
+
+
+#include "workers/dispatcher.hpp"
+#include "workers/worker_state.hpp"
 #include "workers/worker_readdir.hpp"
+
+
+
+#include "helper_test_pgconn.hpp"
 
 using namespace tableauFS;
 using namespace kj;
+using namespace monkeykingz;
 
-using Stat = struct stat;
+
+namespace {
+
+}
 
 struct StreamPair {
 
@@ -55,37 +79,70 @@ struct StreamPair {
 };
 
 
-
-template <typename MessageT>
-void encode_path( kj::OutputStream& out, const std::string& path  ) {
-  ::capnp::MallocMessageBuilder message;
-
-  auto root = message.initRoot<MessageT>();
-  root.setPath( path );
-
-  writePackedMessage(out, message);
-}
-
-
-
-TEST(WorkerReaddir, Basic) {
+template <class Dispatcher>
+void test_readdir(Dispatcher& dispatcher, const std::string& path, const std::vector<std::string>& check_against) {
   StreamPair s;
-  auto worker = workers::make_readdir([](const std::string& path){
-      return DirectoryList{ {"."}, {".."}, {"Default"}, {path.c_str()} };
-      });
-  encode_path<proto::ReaddirReq>( s.to_input, "/hello-world" );
+  {
+      ::capnp::MallocMessageBuilder message;
+      auto root = message.initRoot<proto::ReaddirReq>();
+      root.setPath(path);
+      writePackedMessage(s.to_input, message);
+  }
 
-  ASSERT_EQ( NO_ERR, worker->apply( s.in, s.out ) );
+  dispatcher.run(workers::Readdir::Id, s.in, s.out );
 
   {
-    ::capnp::PackedMessageReader message(s.from_output);
-    auto root = message.getRoot<proto::ReaddirResp>();
-    ASSERT_EQ( 4, root.getEntries().size() );
+    ::capnp::PackedMessageReader reader(s.from_output);
 
-    auto entries = root.getEntries();
-    ASSERT_EQ( ".", (std::string) entries[0] );
-    ASSERT_EQ( "..", (std::string) entries[1] );
-    ASSERT_EQ( "Default", (std::string) entries[2] );
-    ASSERT_EQ( "/hello-world", (std::string) entries[3] );
+    auto root = reader.getRoot<proto::ReaddirResp>();
+    ASSERT_EQ( NO_ERR, root.getErr() );
+
+    const auto& entries = root.getEntries();
+    auto res = std::vector<std::string>(entries.size());
+
+    using std::begin;
+    using std::end;
+
+    std::copy(begin(entries), end(entries), begin(res) );
+    std::sort(begin(res), end(res));
+
+    //for (const auto& e : res) {
+      //printf("    \"%s\",\n", e.c_str());
+    //}
+
+    //for (const auto& e : check_against ) {
+      //printf("[%s]\n", e.c_str());
+    //}
+
+    ASSERT_EQ( check_against.size(), res.size() );
+    for (size_t i=0; i < res.size(); ++i) {
+      ASSERT_EQ( check_against[i], res[i] );
+    }
+
+
   }
+
 }
+
+TEST(ReaddirWorker, Dispatch) {
+  auto dispatcher = Dispatcher<WorkerState>(
+      std::make_unique<WorkerState>(make_pg_connection())
+      );
+
+  dispatcher.register_op<proto::ReaddirReq, proto::ReaddirResp>( workers::Readdir::Id, workers::Readdir{} );
+
+  test_readdir(dispatcher, "/", {".", "..", "Default"});
+  test_readdir(dispatcher, "/Default", {".", "..", "Tableau Samples", "default"});
+  test_readdir(dispatcher, "/Default/default", {".", "..", "test.twb"});
+  test_readdir(dispatcher, "/Default/Tableau Samples", {
+      ".",
+      "..",
+      "Dashboard Parameter Example Many Dashboards2.twbx",
+      "Regional.twbx",
+      "Superstore.twbx",
+      "iphone5.twbx",
+      "test.twb"
+      });
+}
+
+
