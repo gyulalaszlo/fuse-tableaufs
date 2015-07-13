@@ -28,6 +28,7 @@
 #include "workers/dispatcher.hpp"
 #include "workers/worker_state.hpp"
 #include "workers/worker_readdir.hpp"
+#include "workers/worker_get_attributes.hpp"
 
 
 
@@ -130,6 +131,7 @@ TEST(ReaddirWorker, Dispatch) {
       );
 
   dispatcher.register_op<proto::ReaddirReq, proto::ReaddirResp>( workers::Readdir::Id, workers::Readdir{} );
+  dispatcher.register_op<proto::GetAttributesReq, proto::GetAttributesResp>( workers::GetAttributes::Id, workers::GetAttributes{} );
 
   test_readdir(dispatcher, "/", {".", "..", "Default"});
   test_readdir(dispatcher, "/Default", {".", "..", "Tableau Samples", "default"});
