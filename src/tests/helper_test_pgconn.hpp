@@ -11,8 +11,8 @@ namespace tableauFS
   enum { DEFAULT_ROOT_MTIME = 1111 };
   const auto test_host = Host{TFS_TEST_SERVER, "8060", "readonly", "onlyread"};
 
-
-  inline std::unique_ptr<PgConnection> make_pg_connection() {
+  inline std::unique_ptr<PgConnection> make_pg_connection()
+  {
     return std::make_unique<PgConnection>(test_host);
   }
 

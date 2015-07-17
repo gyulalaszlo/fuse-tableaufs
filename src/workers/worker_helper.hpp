@@ -1,6 +1,8 @@
 #pragma once
 
-namespace tableauFS {
-namespace workers {
-
-}}
+namespace tableauFS
+{
+  namespace workers
+  {
+  }
+}

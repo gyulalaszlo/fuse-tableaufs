@@ -96,7 +96,7 @@ namespace tableauFS
     if (!ok()) return {-EINVAL, nullptr};
 
     log::info("[SQL] Running SQL: '%s'\n", sql);
-    for (uint32_t i = 0; i < nParams; ++i) {
+    for (auto i = 0; i < nParams; ++i) {
       log::info("[SQL]  param $%d : '%s'\n", i + 1, paramValues[i]);
     }
 

@@ -53,6 +53,9 @@ if (CXX_HAS_CPP14)
   add_definitions(-DHAS_CPP14=1)
 endif()
 
+generate_capnp(capnp/tfs.capnp)
+
+
 
 add_library( tableaufs-pgconn
 
@@ -68,11 +71,9 @@ add_library( tableaufs-pgconn
   connection/tfs_postgres_config.cc
   connection/tfs_postgres.cc
 
-  capnp/tfs.capnp.c++
   connection/tfs_capnp.cc
+  ${TFS_CAPNP_FILES}
 
-
-  workers/worker_readdir.cc
 
   )
 

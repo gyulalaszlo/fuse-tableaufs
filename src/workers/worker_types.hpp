@@ -1,9 +1,9 @@
 #pragma once
 
-namespace tableauFS {
-namespace workers {
-
-
+namespace tableauFS
+{
+  namespace workers
+  {
     // The indices in the SQL queries
     enum {
       TFS_WG_QUERY_NAME = 0,
@@ -11,6 +11,5 @@ namespace workers {
       TFS_WG_QUERY_CONTENT = 2,
       TFS_WG_QUERY_SIZE = 3
     };
-
-
-}}
+  }
+}

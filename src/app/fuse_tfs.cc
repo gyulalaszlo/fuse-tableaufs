@@ -163,10 +163,10 @@ namespace
   }
 #endif
 
-  
   // A C++ generator for the fuse_operations struct (since its
   // invalid C++ code to use C initializers)
-  fuse_operations make_tableau_operations() {
+  fuse_operations make_tableau_operations()
+  {
     auto op = fuse_operations{};
     op.getattr = tableau_getattr;
     op.readdir = tableau_readdir;

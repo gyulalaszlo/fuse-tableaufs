@@ -6,21 +6,10 @@
 
 #include <capnp/generated-header-support.h>
 
-#if CAPNP_VERSION != 5002
+#if CAPNP_VERSION != 4000
 #error "Version mismatch between generated code and library headers.  You must use the same version of the Cap'n Proto compiler and library."
 #endif
 
-
-namespace capnp {
-namespace schemas {
-
-CAPNP_DECLARE_SCHEMA(b9f7265c923a761f);
-CAPNP_DECLARE_SCHEMA(c71c95286510ad5f);
-CAPNP_DECLARE_SCHEMA(cb49fd0283e73abb);
-CAPNP_DECLARE_SCHEMA(dc3e07e9f74d4e69);
-
-}  // namespace schemas
-}  // namespace capnp
 
 namespace tableauFS {
 namespace proto {
@@ -31,13 +20,6 @@ struct ReaddirReq {
   class Reader;
   class Builder;
   class Pipeline;
-
-  struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(b9f7265c923a761f, 0, 1)
-    #if !CAPNP_LITE
-    static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
-    #endif  // !CAPNP_LITE
-  };
 };
 
 struct ReaddirResp {
@@ -46,13 +28,6 @@ struct ReaddirResp {
   class Reader;
   class Builder;
   class Pipeline;
-
-  struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c71c95286510ad5f, 1, 1)
-    #if !CAPNP_LITE
-    static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
-    #endif  // !CAPNP_LITE
-  };
 };
 
 struct GetAttributesReq {
@@ -61,13 +36,6 @@ struct GetAttributesReq {
   class Reader;
   class Builder;
   class Pipeline;
-
-  struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(cb49fd0283e73abb, 0, 1)
-    #if !CAPNP_LITE
-    static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
-    #endif  // !CAPNP_LITE
-  };
 };
 
 struct GetAttributesResp {
@@ -76,16 +44,44 @@ struct GetAttributesResp {
   class Reader;
   class Builder;
   class Pipeline;
-
-  struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(dc3e07e9f74d4e69, 7, 0)
-    #if !CAPNP_LITE
-    static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
-    #endif  // !CAPNP_LITE
-  };
 };
 
+}  // namespace
+}  // namespace
+
 // =======================================================================================
+
+namespace capnp {
+namespace schemas {
+
+extern const ::capnp::_::RawSchema s_b9f7265c923a761f;
+extern const ::capnp::_::RawSchema s_c71c95286510ad5f;
+extern const ::capnp::_::RawSchema s_cb49fd0283e73abb;
+extern const ::capnp::_::RawSchema s_dc3e07e9f74d4e69;
+
+}  // namespace schemas
+namespace _ {  // private
+
+CAPNP_DECLARE_STRUCT(
+    ::tableauFS::proto::ReaddirReq, b9f7265c923a761f,
+    0, 1, POINTER);
+CAPNP_DECLARE_STRUCT(
+    ::tableauFS::proto::ReaddirResp, c71c95286510ad5f,
+    1, 1, INLINE_COMPOSITE);
+CAPNP_DECLARE_STRUCT(
+    ::tableauFS::proto::GetAttributesReq, cb49fd0283e73abb,
+    0, 1, POINTER);
+CAPNP_DECLARE_STRUCT(
+    ::tableauFS::proto::GetAttributesResp, dc3e07e9f74d4e69,
+    7, 0, INLINE_COMPOSITE);
+
+}  // namespace _ (private)
+}  // namespace capnp
+
+// =======================================================================================
+
+namespace tableauFS {
+namespace proto {
 
 class ReaddirReq::Reader {
 public:
@@ -98,26 +94,25 @@ public:
     return _reader.totalSize().asPublic();
   }
 
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const {
-    return ::capnp::_::structString(_reader, *_capnpPrivate::brand);
-  }
-#endif  // !CAPNP_LITE
-
   inline bool hasPath() const;
   inline  ::capnp::Text::Reader getPath() const;
 
 private:
   ::capnp::_::StructReader _reader;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::_::PointerHelpers;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::List;
   friend class ::capnp::MessageBuilder;
   friend class ::capnp::Orphanage;
+  friend ::kj::StringTree KJ_STRINGIFY(ReaddirReq::Reader reader);
 };
+
+inline ::kj::StringTree KJ_STRINGIFY(ReaddirReq::Reader reader) {
+  return ::capnp::_::structString<ReaddirReq>(reader._reader);
+}
 
 class ReaddirReq::Builder {
 public:
@@ -131,9 +126,6 @@ public:
   inline Reader asReader() const { return *this; }
 
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const { return asReader().toString(); }
-#endif  // !CAPNP_LITE
 
   inline bool hasPath();
   inline  ::capnp::Text::Builder getPath();
@@ -144,14 +136,16 @@ public:
 
 private:
   ::capnp::_::StructBuilder _builder;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
   friend class ::capnp::Orphanage;
-  template <typename, ::capnp::Kind>
-  friend struct ::capnp::_::PointerHelpers;
+  friend ::kj::StringTree KJ_STRINGIFY(ReaddirReq::Builder builder);
 };
 
-#if !CAPNP_LITE
+inline ::kj::StringTree KJ_STRINGIFY(ReaddirReq::Builder builder) {
+  return ::capnp::_::structString<ReaddirReq>(builder._builder.asReader());
+}
+
 class ReaddirReq::Pipeline {
 public:
   typedef ReaddirReq Pipelines;
@@ -162,11 +156,9 @@ public:
 
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
-  friend class ::capnp::PipelineHook;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
 };
-#endif  // !CAPNP_LITE
 
 class ReaddirResp::Reader {
 public:
@@ -179,12 +171,6 @@ public:
     return _reader.totalSize().asPublic();
   }
 
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const {
-    return ::capnp::_::structString(_reader, *_capnpPrivate::brand);
-  }
-#endif  // !CAPNP_LITE
-
   inline  ::int64_t getErr() const;
 
   inline bool hasEntries() const;
@@ -192,15 +178,20 @@ public:
 
 private:
   ::capnp::_::StructReader _reader;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::_::PointerHelpers;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::List;
   friend class ::capnp::MessageBuilder;
   friend class ::capnp::Orphanage;
+  friend ::kj::StringTree KJ_STRINGIFY(ReaddirResp::Reader reader);
 };
+
+inline ::kj::StringTree KJ_STRINGIFY(ReaddirResp::Reader reader) {
+  return ::capnp::_::structString<ReaddirResp>(reader._reader);
+}
 
 class ReaddirResp::Builder {
 public:
@@ -214,9 +205,6 @@ public:
   inline Reader asReader() const { return *this; }
 
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const { return asReader().toString(); }
-#endif  // !CAPNP_LITE
 
   inline  ::int64_t getErr();
   inline void setErr( ::int64_t value);
@@ -231,14 +219,16 @@ public:
 
 private:
   ::capnp::_::StructBuilder _builder;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
   friend class ::capnp::Orphanage;
-  template <typename, ::capnp::Kind>
-  friend struct ::capnp::_::PointerHelpers;
+  friend ::kj::StringTree KJ_STRINGIFY(ReaddirResp::Builder builder);
 };
 
-#if !CAPNP_LITE
+inline ::kj::StringTree KJ_STRINGIFY(ReaddirResp::Builder builder) {
+  return ::capnp::_::structString<ReaddirResp>(builder._builder.asReader());
+}
+
 class ReaddirResp::Pipeline {
 public:
   typedef ReaddirResp Pipelines;
@@ -249,11 +239,9 @@ public:
 
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
-  friend class ::capnp::PipelineHook;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
 };
-#endif  // !CAPNP_LITE
 
 class GetAttributesReq::Reader {
 public:
@@ -266,26 +254,25 @@ public:
     return _reader.totalSize().asPublic();
   }
 
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const {
-    return ::capnp::_::structString(_reader, *_capnpPrivate::brand);
-  }
-#endif  // !CAPNP_LITE
-
   inline bool hasPath() const;
   inline  ::capnp::Text::Reader getPath() const;
 
 private:
   ::capnp::_::StructReader _reader;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::_::PointerHelpers;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::List;
   friend class ::capnp::MessageBuilder;
   friend class ::capnp::Orphanage;
+  friend ::kj::StringTree KJ_STRINGIFY(GetAttributesReq::Reader reader);
 };
+
+inline ::kj::StringTree KJ_STRINGIFY(GetAttributesReq::Reader reader) {
+  return ::capnp::_::structString<GetAttributesReq>(reader._reader);
+}
 
 class GetAttributesReq::Builder {
 public:
@@ -299,9 +286,6 @@ public:
   inline Reader asReader() const { return *this; }
 
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const { return asReader().toString(); }
-#endif  // !CAPNP_LITE
 
   inline bool hasPath();
   inline  ::capnp::Text::Builder getPath();
@@ -312,14 +296,16 @@ public:
 
 private:
   ::capnp::_::StructBuilder _builder;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
   friend class ::capnp::Orphanage;
-  template <typename, ::capnp::Kind>
-  friend struct ::capnp::_::PointerHelpers;
+  friend ::kj::StringTree KJ_STRINGIFY(GetAttributesReq::Builder builder);
 };
 
-#if !CAPNP_LITE
+inline ::kj::StringTree KJ_STRINGIFY(GetAttributesReq::Builder builder) {
+  return ::capnp::_::structString<GetAttributesReq>(builder._builder.asReader());
+}
+
 class GetAttributesReq::Pipeline {
 public:
   typedef GetAttributesReq Pipelines;
@@ -330,11 +316,9 @@ public:
 
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
-  friend class ::capnp::PipelineHook;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
 };
-#endif  // !CAPNP_LITE
 
 class GetAttributesResp::Reader {
 public:
@@ -346,12 +330,6 @@ public:
   inline ::capnp::MessageSize totalSize() const {
     return _reader.totalSize().asPublic();
   }
-
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const {
-    return ::capnp::_::structString(_reader, *_capnpPrivate::brand);
-  }
-#endif  // !CAPNP_LITE
 
   inline  ::int64_t getErr() const;
 
@@ -369,15 +347,20 @@ public:
 
 private:
   ::capnp::_::StructReader _reader;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::_::PointerHelpers;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::List;
   friend class ::capnp::MessageBuilder;
   friend class ::capnp::Orphanage;
+  friend ::kj::StringTree KJ_STRINGIFY(GetAttributesResp::Reader reader);
 };
+
+inline ::kj::StringTree KJ_STRINGIFY(GetAttributesResp::Reader reader) {
+  return ::capnp::_::structString<GetAttributesResp>(reader._reader);
+}
 
 class GetAttributesResp::Builder {
 public:
@@ -391,9 +374,6 @@ public:
   inline Reader asReader() const { return *this; }
 
   inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
-#if !CAPNP_LITE
-  inline ::kj::StringTree toString() const { return asReader().toString(); }
-#endif  // !CAPNP_LITE
 
   inline  ::int64_t getErr();
   inline void setErr( ::int64_t value);
@@ -418,14 +398,16 @@ public:
 
 private:
   ::capnp::_::StructBuilder _builder;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
   friend class ::capnp::Orphanage;
-  template <typename, ::capnp::Kind>
-  friend struct ::capnp::_::PointerHelpers;
+  friend ::kj::StringTree KJ_STRINGIFY(GetAttributesResp::Builder builder);
 };
 
-#if !CAPNP_LITE
+inline ::kj::StringTree KJ_STRINGIFY(GetAttributesResp::Builder builder) {
+  return ::capnp::_::structString<GetAttributesResp>(builder._builder.asReader());
+}
+
 class GetAttributesResp::Pipeline {
 public:
   typedef GetAttributesResp Pipelines;
@@ -436,11 +418,9 @@ public:
 
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
-  friend class ::capnp::PipelineHook;
-  template <typename, ::capnp::Kind>
+  template <typename T, ::capnp::Kind k>
   friend struct ::capnp::ToDynamic_;
 };
-#endif  // !CAPNP_LITE
 
 // =======================================================================================
 

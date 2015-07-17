@@ -94,8 +94,8 @@ namespace monkeykingz
   /// Convinience wrapper for making slices from containers
   /// linear in memory
   template <typename Container>
-  inline auto make_slice(
-      Container& c) noexcept -> slice<typename Container::value_type>
+  inline auto make_slice(Container& c) noexcept
+      -> slice<typename Container::value_type>
   {
     return slice<typename Container::value_type>{c.data(), c.size()};
   }

@@ -32,6 +32,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseCxx11)
 include(DefaultCompilerFlags)
 include(FindPkgConfig)
+include(GenerateCapnp)
 
 # Try to find Postgres
 find_package(Postgres 9.0 REQUIRED)
